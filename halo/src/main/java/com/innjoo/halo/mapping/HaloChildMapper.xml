@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.innjoo.halo.dao.HaloChildMapper" >
+  <resultMap id="BaseResultMap" type="com.innjoo.halo.model.HaloChild" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="halo_id" property="haloId" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="avatar" property="avatar" jdbcType="VARCHAR" />
+    <result column="birth" property="birth" jdbcType="DATE" />
+    <result column="weight" property="weight" jdbcType="SMALLINT" />
+    <result column="gender" property="gender" jdbcType="TINYINT" />
+    <result column="target" property="target" jdbcType="INTEGER" />
+    <result column="school_time_start" property="schoolTimeStart" jdbcType="VARCHAR" />
+    <result column="school_time_end" property="schoolTimeEnd" jdbcType="VARCHAR" />
+    <result column="sleep_time_start" property="sleepTimeStart" jdbcType="VARCHAR" />
+    <result column="sleep_time_end" property="sleepTimeEnd" jdbcType="VARCHAR" />
+    <result column="time_zone" property="timeZone" jdbcType="TINYINT" />
+    <result column="explored_star_id" property="exploredStarId" jdbcType="CHAR" />
+    <result column="petid" property="petid" jdbcType="TINYINT" />
+    <result column="level" property="level" jdbcType="INTEGER" />
+    <result column="score" property="score" jdbcType="INTEGER" />
+    <result column="pid" property="pid" jdbcType="INTEGER" />
+    <result column="star_id" property="starId" jdbcType="TINYINT" />
+    <result column="star_level" property="starLevel" jdbcType="TINYINT" />
+    <result column="cur_drink_water" property="curDrinkWater" jdbcType="INTEGER" />
+    <result column="deviceLanguage" property="devicelanguage" jdbcType="TINYINT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, halo_id, name, avatar, birth, weight, gender, target, school_time_start, school_time_end, 
+    sleep_time_start, sleep_time_end, time_zone, explored_star_id, petid, level, score, 
+    pid, star_id, star_level, cur_drink_water, deviceLanguage
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from halo_child
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from halo_child
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.innjoo.halo.model.HaloChild" >
+    insert into halo_child (id, halo_id, name, 
+      avatar, birth, weight, 
+      gender, target, school_time_start, 
+      school_time_end, sleep_time_start, sleep_time_end, 
+      time_zone, explored_star_id, petid, 
+      level, score, pid, 
+      star_id, star_level, cur_drink_water, 
+      deviceLanguage)
+    values (#{id,jdbcType=INTEGER}, #{haloId,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{avatar,jdbcType=VARCHAR}, #{birth,jdbcType=DATE}, #{weight,jdbcType=SMALLINT}, 
+      #{gender,jdbcType=TINYINT}, #{target,jdbcType=INTEGER}, #{schoolTimeStart,jdbcType=VARCHAR}, 
+      #{schoolTimeEnd,jdbcType=VARCHAR}, #{sleepTimeStart,jdbcType=VARCHAR}, #{sleepTimeEnd,jdbcType=VARCHAR}, 
+      #{timeZone,jdbcType=TINYINT}, #{exploredStarId,jdbcType=CHAR}, #{petid,jdbcType=TINYINT}, 
+      #{level,jdbcType=INTEGER}, #{score,jdbcType=INTEGER}, #{pid,jdbcType=INTEGER}, 
+      #{starId,jdbcType=TINYINT}, #{starLevel,jdbcType=TINYINT}, #{curDrinkWater,jdbcType=INTEGER}, 
+      #{devicelanguage,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.innjoo.halo.model.HaloChild" >
+    insert into halo_child
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="haloId != null" >
+        halo_id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="avatar != null" >
+        avatar,
+      </if>
+      <if test="birth != null" >
+        birth,
+      </if>
+      <if test="weight != null" >
+        weight,
+      </if>
+      <if test="gender != null" >
+        gender,
+      </if>
+      <if test="target != null" >
+        target,
+      </if>
+      <if test="schoolTimeStart != null" >
+        school_time_start,
+      </if>
+      <if test="schoolTimeEnd != null" >
+        school_time_end,
+      </if>
+      <if test="sleepTimeStart != null" >
+        sleep_time_start,
+      </if>
+      <if test="sleepTimeEnd != null" >
+        sleep_time_end,
+      </if>
+      <if test="timeZone != null" >
+        time_zone,
+      </if>
+      <if test="exploredStarId != null" >
+        explored_star_id,
+      </if>
+      <if test="petid != null" >
+        petid,
+      </if>
+      <if test="level != null" >
+        level,
+      </if>
+      <if test="score != null" >
+        score,
+      </if>
+      <if test="pid != null" >
+        pid,
+      </if>
+      <if test="starId != null" >
+        star_id,
+      </if>
+      <if test="starLevel != null" >
+        star_level,
+      </if>
+      <if test="curDrinkWater != null" >
+        cur_drink_water,
+      </if>
+      <if test="devicelanguage != null" >
+        deviceLanguage,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="haloId != null" >
+        #{haloId,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="avatar != null" >
+        #{avatar,jdbcType=VARCHAR},
+      </if>
+      <if test="birth != null" >
+        #{birth,jdbcType=DATE},
+      </if>
+      <if test="weight != null" >
+        #{weight,jdbcType=SMALLINT},
+      </if>
+      <if test="gender != null" >
+        #{gender,jdbcType=TINYINT},
+      </if>
+      <if test="target != null" >
+        #{target,jdbcType=INTEGER},
+      </if>
+      <if test="schoolTimeStart != null" >
+        #{schoolTimeStart,jdbcType=VARCHAR},
+      </if>
+      <if test="schoolTimeEnd != null" >
+        #{schoolTimeEnd,jdbcType=VARCHAR},
+      </if>
+      <if test="sleepTimeStart != null" >
+        #{sleepTimeStart,jdbcType=VARCHAR},
+      </if>
+      <if test="sleepTimeEnd != null" >
+        #{sleepTimeEnd,jdbcType=VARCHAR},
+      </if>
+      <if test="timeZone != null" >
+        #{timeZone,jdbcType=TINYINT},
+      </if>
+      <if test="exploredStarId != null" >
+        #{exploredStarId,jdbcType=CHAR},
+      </if>
+      <if test="petid != null" >
+        #{petid,jdbcType=TINYINT},
+      </if>
+      <if test="level != null" >
+        #{level,jdbcType=INTEGER},
+      </if>
+      <if test="score != null" >
+        #{score,jdbcType=INTEGER},
+      </if>
+      <if test="pid != null" >
+        #{pid,jdbcType=INTEGER},
+      </if>
+      <if test="starId != null" >
+        #{starId,jdbcType=TINYINT},
+      </if>
+      <if test="starLevel != null" >
+        #{starLevel,jdbcType=TINYINT},
+      </if>
+      <if test="curDrinkWater != null" >
+        #{curDrinkWater,jdbcType=INTEGER},
+      </if>
+      <if test="devicelanguage != null" >
+        #{devicelanguage,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.innjoo.halo.model.HaloChild" >
+    update halo_child
+    <set >
+      <if test="haloId != null" >
+        halo_id = #{haloId,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="avatar != null" >
+        avatar = #{avatar,jdbcType=VARCHAR},
+      </if>
+      <if test="birth != null" >
+        birth = #{birth,jdbcType=DATE},
+      </if>
+      <if test="weight != null" >
+        weight = #{weight,jdbcType=SMALLINT},
+      </if>
+      <if test="gender != null" >
+        gender = #{gender,jdbcType=TINYINT},
+      </if>
+      <if test="target != null" >
+        target = #{target,jdbcType=INTEGER},
+      </if>
+      <if test="schoolTimeStart != null" >
+        school_time_start = #{schoolTimeStart,jdbcType=VARCHAR},
+      </if>
+      <if test="schoolTimeEnd != null" >
+        school_time_end = #{schoolTimeEnd,jdbcType=VARCHAR},
+      </if>
+      <if test="sleepTimeStart != null" >
+        sleep_time_start = #{sleepTimeStart,jdbcType=VARCHAR},
+      </if>
+      <if test="sleepTimeEnd != null" >
+        sleep_time_end = #{sleepTimeEnd,jdbcType=VARCHAR},
+      </if>
+      <if test="timeZone != null" >
+        time_zone = #{timeZone,jdbcType=TINYINT},
+      </if>
+      <if test="exploredStarId != null" >
+        explored_star_id = #{exploredStarId,jdbcType=CHAR},
+      </if>
+      <if test="petid != null" >
+        petid = #{petid,jdbcType=TINYINT},
+      </if>
+      <if test="level != null" >
+        level = #{level,jdbcType=INTEGER},
+      </if>
+      <if test="score != null" >
+        score = #{score,jdbcType=INTEGER},
+      </if>
+      <if test="pid != null" >
+        pid = #{pid,jdbcType=INTEGER},
+      </if>
+      <if test="starId != null" >
+        star_id = #{starId,jdbcType=TINYINT},
+      </if>
+      <if test="starLevel != null" >
+        star_level = #{starLevel,jdbcType=TINYINT},
+      </if>
+      <if test="curDrinkWater != null" >
+        cur_drink_water = #{curDrinkWater,jdbcType=INTEGER},
+      </if>
+      <if test="devicelanguage != null" >
+        deviceLanguage = #{devicelanguage,jdbcType=TINYINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.innjoo.halo.model.HaloChild" >
+    update halo_child
+    set halo_id = #{haloId,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      avatar = #{avatar,jdbcType=VARCHAR},
+      birth = #{birth,jdbcType=DATE},
+      weight = #{weight,jdbcType=SMALLINT},
+      gender = #{gender,jdbcType=TINYINT},
+      target = #{target,jdbcType=INTEGER},
+      school_time_start = #{schoolTimeStart,jdbcType=VARCHAR},
+      school_time_end = #{schoolTimeEnd,jdbcType=VARCHAR},
+      sleep_time_start = #{sleepTimeStart,jdbcType=VARCHAR},
+      sleep_time_end = #{sleepTimeEnd,jdbcType=VARCHAR},
+      time_zone = #{timeZone,jdbcType=TINYINT},
+      explored_star_id = #{exploredStarId,jdbcType=CHAR},
+      petid = #{petid,jdbcType=TINYINT},
+      level = #{level,jdbcType=INTEGER},
+      score = #{score,jdbcType=INTEGER},
+      pid = #{pid,jdbcType=INTEGER},
+      star_id = #{starId,jdbcType=TINYINT},
+      star_level = #{starLevel,jdbcType=TINYINT},
+      cur_drink_water = #{curDrinkWater,jdbcType=INTEGER},
+      deviceLanguage = #{devicelanguage,jdbcType=TINYINT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+    <select id="selectByHaloId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from halo_child
+    where halo_id = #{haloId,jdbcType=INTEGER}
+  </select>
+</mapper>

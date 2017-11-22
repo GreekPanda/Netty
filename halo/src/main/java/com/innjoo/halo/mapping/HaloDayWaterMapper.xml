@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.innjoo.halo.dao.HaloDayWaterMapper" >
+  <resultMap id="BaseResultMap" type="com.innjoo.halo.model.HaloDayWater" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="water" property="water" jdbcType="INTEGER" />
+    <result column="kid" property="kid" jdbcType="INTEGER" />
+    <result column="type_time" property="typeTime" jdbcType="INTEGER" />
+    <result column="upload_time" property="uploadTime" jdbcType="DATE" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, water, kid, type_time, upload_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from halo_day_water
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from halo_day_water
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.innjoo.halo.model.HaloDayWater" >
+    insert into halo_day_water (id, water, kid, 
+      type_time, upload_time)
+    values (#{id,jdbcType=INTEGER}, #{water,jdbcType=INTEGER}, #{kid,jdbcType=INTEGER}, 
+      #{typeTime,jdbcType=INTEGER}, #{uploadTime,jdbcType=DATE})
+  </insert>
+  <insert id="insertSelective" parameterType="com.innjoo.halo.model.HaloDayWater" >
+    insert into halo_day_water
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="water != null" >
+        water,
+      </if>
+      <if test="kid != null" >
+        kid,
+      </if>
+      <if test="typeTime != null" >
+        type_time,
+      </if>
+      <if test="uploadTime != null" >
+        upload_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="water != null" >
+        #{water,jdbcType=INTEGER},
+      </if>
+      <if test="kid != null" >
+        #{kid,jdbcType=INTEGER},
+      </if>
+      <if test="typeTime != null" >
+        #{typeTime,jdbcType=INTEGER},
+      </if>
+      <if test="uploadTime != null" >
+        #{uploadTime,jdbcType=DATE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.innjoo.halo.model.HaloDayWater" >
+    update halo_day_water
+    <set >
+      <if test="water != null" >
+        water = #{water,jdbcType=INTEGER},
+      </if>
+      <if test="kid != null" >
+        kid = #{kid,jdbcType=INTEGER},
+      </if>
+      <if test="typeTime != null" >
+        type_time = #{typeTime,jdbcType=INTEGER},
+      </if>
+      <if test="uploadTime != null" >
+        upload_time = #{uploadTime,jdbcType=DATE},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.innjoo.halo.model.HaloDayWater" >
+    update halo_day_water
+    set water = #{water,jdbcType=INTEGER},
+      kid = #{kid,jdbcType=INTEGER},
+      type_time = #{typeTime,jdbcType=INTEGER},
+      upload_time = #{uploadTime,jdbcType=DATE}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

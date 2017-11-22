@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.innjoo.halo.dao.HaloHourWaterMapper" >
+  <resultMap id="BaseResultMap" type="com.innjoo.halo.model.HaloHourWater" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="water" property="water" jdbcType="INTEGER" />
+    <result column="kid" property="kid" jdbcType="INTEGER" />
+    <result column="type_time" property="typeTime" jdbcType="INTEGER" />
+    <result column="day_time" property="dayTime" jdbcType="INTEGER" />
+    <result column="group_id" property="groupId" jdbcType="SMALLINT" />
+    <result column="upload_time" property="uploadTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, water, kid, type_time, day_time, group_id, upload_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from halo_hour_water
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from halo_hour_water
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.innjoo.halo.model.HaloHourWater" >
+    insert into halo_hour_water (id, water, kid, 
+      type_time, day_time, group_id, 
+      upload_time)
+    values (#{id,jdbcType=INTEGER}, #{water,jdbcType=INTEGER}, #{kid,jdbcType=INTEGER}, 
+      #{typeTime,jdbcType=INTEGER}, #{dayTime,jdbcType=INTEGER}, #{groupId,jdbcType=SMALLINT}, 
+      #{uploadTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.innjoo.halo.model.HaloHourWater" >
+    insert into halo_hour_water
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="water != null" >
+        water,
+      </if>
+      <if test="kid != null" >
+        kid,
+      </if>
+      <if test="typeTime != null" >
+        type_time,
+      </if>
+      <if test="dayTime != null" >
+        day_time,
+      </if>
+      <if test="groupId != null" >
+        group_id,
+      </if>
+      <if test="uploadTime != null" >
+        upload_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="water != null" >
+        #{water,jdbcType=INTEGER},
+      </if>
+      <if test="kid != null" >
+        #{kid,jdbcType=INTEGER},
+      </if>
+      <if test="typeTime != null" >
+        #{typeTime,jdbcType=INTEGER},
+      </if>
+      <if test="dayTime != null" >
+        #{dayTime,jdbcType=INTEGER},
+      </if>
+      <if test="groupId != null" >
+        #{groupId,jdbcType=SMALLINT},
+      </if>
+      <if test="uploadTime != null" >
+        #{uploadTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.innjoo.halo.model.HaloHourWater" >
+    update halo_hour_water
+    <set >
+      <if test="water != null" >
+        water = #{water,jdbcType=INTEGER},
+      </if>
+      <if test="kid != null" >
+        kid = #{kid,jdbcType=INTEGER},
+      </if>
+      <if test="typeTime != null" >
+        type_time = #{typeTime,jdbcType=INTEGER},
+      </if>
+      <if test="dayTime != null" >
+        day_time = #{dayTime,jdbcType=INTEGER},
+      </if>
+      <if test="groupId != null" >
+        group_id = #{groupId,jdbcType=SMALLINT},
+      </if>
+      <if test="uploadTime != null" >
+        upload_time = #{uploadTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.innjoo.halo.model.HaloHourWater" >
+    update halo_hour_water
+    set water = #{water,jdbcType=INTEGER},
+      kid = #{kid,jdbcType=INTEGER},
+      type_time = #{typeTime,jdbcType=INTEGER},
+      day_time = #{dayTime,jdbcType=INTEGER},
+      group_id = #{groupId,jdbcType=SMALLINT},
+      upload_time = #{uploadTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
