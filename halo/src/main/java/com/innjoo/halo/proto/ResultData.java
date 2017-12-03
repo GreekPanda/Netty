@@ -8,15 +8,6 @@ public class ResultData {
 	private short needUpdateSize;
 	private byte[] data;
 
-	public ResultData() {
-	}
-
-	public ResultData(short ctrlCode, short needUpdateSize, byte[] data) {
-		this.ctrlCode = ctrlCode;
-		this.needUpdateSize = needUpdateSize;
-		this.data = data;
-	}
-
 	public short getCtrlCode() {
 		return ctrlCode;
 	}

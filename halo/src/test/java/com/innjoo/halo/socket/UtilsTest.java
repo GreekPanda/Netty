@@ -35,7 +35,7 @@ public class UtilsTest {
 		byte min = Byte.parseByte(s1.split(" ")[1].split(":")[1]);
 		byte sec = Byte.parseByte(s1.split(" ")[1].split(":")[2]);
 		// b[1] = (byte) ((Short.parseShort(s1.split(" ")[0].split("-")[0])) | 0xFF);
-		//System.out.println(year);
+		// System.out.println(year);
 		// b = shortToByte(year);
 		// short year16 = Integer.toHexString(year);
 		year = 417;
@@ -47,19 +47,20 @@ public class UtilsTest {
 		b[4] = hour;
 		b[5] = min;
 		b[6] = sec;
-		
-//		byte[] brr = new byte[]{(byte)(year & 0x00FF),(byte)((year & 0xFF00)>>8)};
-//		
-//		byte[] arr = new byte[]{(byte)((year >> 8) & 0xFF),( byte )( year & 0xFF)};
 
-		//System.out.println("year: " + arr[0] + ""+ arr[1]);
-		
-		//System.out.println(ut.getWeek() - 1);
-		
-		
-		//System.out.println(Arrays.toString(ut.varByte()) + ", " + "length: " + ut.varByte().length);
-		
-		ut.testTwoBytes();
+		// byte[] brr = new byte[]{(byte)(year & 0x00FF),(byte)((year & 0xFF00)>>8)};
+		//
+		// byte[] arr = new byte[]{(byte)((year >> 8) & 0xFF),( byte )( year & 0xFF)};
+
+		// System.out.println("year: " + arr[0] + ""+ arr[1]);
+
+		// System.out.println(ut.getWeek() - 1);
+
+		// System.out.println(Arrays.toString(ut.varByte()) + ", " + "length: " +
+		// ut.varByte().length);
+
+		// ut.testTwoBytes();
+		ut.testByte2Short();
 	}
 
 	private boolean testByteIsChanged(byte[] in) {
@@ -107,33 +108,51 @@ public class UtilsTest {
 		}
 		return b;
 	}
-	
+
 	public byte[] varByte() {
 		byte[] data = new byte[] {};
-		
+
 		System.out.println("==> " + data.length);
-		
+
 		byte[] tmp = new byte[10];
-		for(int i = 0; i < 10; ++i)
+		for (int i = 0; i < 10; ++i)
 			tmp[i] = (byte) i;
-		
+
 		data = new byte[tmp.length];
-		
+
 		System.arraycopy(tmp, 0, data, 0, data.length);
-		
+
 		return data;
 	}
-	
+
 	private void testTwoBytes() {
 		byte[] out = new byte[4];
-		
-		byte[] b1 = new byte[] {1, 0};
-		byte[] b2 = new byte[] {3, 0};		
-		
+
+		byte[] b1 = new byte[] { 1, 0 };
+		byte[] b2 = new byte[] { 3, 0 };
+
 		System.arraycopy(b1, 0, out, 0, 2);
 		System.arraycopy(b2, 0, out, 2, 2);
-		
+
 		System.out.println(Arrays.toString(out));
+	}
+
+	private void testByte2Short() {
+		byte[] a = new byte[] {0x32, 0 };
+
+		System.out.println(bytetoString(a));
+	}
+
+	public static String bytetoString(byte[] bytearray) {
+		String result = "";
+		char temp;
+
+		int length = bytearray.length;
+		for (int i = 0; i < length; i++) {
+			temp = (char) bytearray[i];
+			result += temp;
+		}
+		return result;
 	}
 
 }

@@ -7,9 +7,10 @@ import com.innjoo.halo.model.HaloChild;
 
 public interface IHaloChildService {
 
-	HaloChild queryHaloChildByAccountId(Integer accountId);
+	HaloChild selectByPrimaryKey(Integer accountId);
 	void updateByPrimaryKey(HaloChild hc);
-	void updateHaloChild(Integer id);
-	void updateHaloIdAndRoleIdByAccountId(Integer accountId, String haloId, byte petId);
+	void updateHaloChild(HaloChild record);
+	void updateHaloIdAndRoleIdByAccountId(HaloChild record);
 	List<HaloChild> selectByHaloId(String haloId);
+	void updateInfoByPrimaryKey(HaloChild hc);
 } 

@@ -1,5 +1,7 @@
 package com.innjoo.halo.dao;
 
+import java.util.Map;
+
 import com.innjoo.halo.model.HaloFriends;
 
 public interface HaloFriendsMapper {
@@ -15,7 +17,7 @@ public interface HaloFriendsMapper {
 
     int updateByPrimaryKey(HaloFriends record);
     
-    HaloFriends selectByKid(Integer kid);
+    HaloFriends selectByKid(Map<String, Object> map);
     
     int insertByPrimaryId(HaloFriends record);
 }

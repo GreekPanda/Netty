@@ -6,6 +6,23 @@ import java.nio.charset.Charset;
 
 public class Utils {
 
+	public static byte[] bytesToHex(byte[] bytes) {
+		char[] hexArray = "0123456789ABCDEF".toCharArray();
+		char[] hexChars = new char[bytes.length * 2];
+		for (int j = 0; j < bytes.length; j++) {
+			int v = bytes[j] & 0xFF;
+			hexChars[j * 2] = hexArray[v >>> 4];
+			hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+		}
+		// return new String(hexChars);
+		CharBuffer cb = CharBuffer.allocate(hexChars.length);
+		Charset cs = Charset.forName("UTF-8");
+		cb.put(hexChars);
+		cb.flip();
+		ByteBuffer bb = cs.encode(cb);
+		return bb.array();
+	}
+
 	public static String bytesToHexString(byte[] src) {
 		StringBuilder stringBuilder = new StringBuilder("");
 		if (src == null || src.length <= 0) {
@@ -192,38 +209,31 @@ public class Utils {
 	}
 
 	public static int bytesToIntBig(byte[] src, int offset) {
-	    int value;
-	    value = (int) (((src[offset] & 0xFF) << 24)
-	            | ((src[offset + 1] & 0xFF) << 16)
-	            | ((src[offset + 2] & 0xFF) << 8)
-	            | (src[offset + 3] & 0xFF));
-	    return value;
-	}
-	
-	public static int bytesToIntLittle(byte[] src, int offset) {
-	    int value;
-	    value = (int) ((src[offset] & 0xFF)
-	            | ((src[offset + 1] & 0xFF) << 8)
-	            | ((src[offset + 2] & 0xFF) << 16)
-	            | ((src[offset + 3] & 0xFF) << 24));
-	    return value;
-	}
-	
-	public static short bytesToShortBig(byte[] src, int offset) {
-	    short value;
-	    value = (short) (((src[offset] & 0xFF) << 8)
-	            | (src[offset + 1] & 0xFF));
-	    return value;
-	}
-	
-	public static short bytesToShortLittle(byte[] src, int offset) {
-	    short value;
-	    value = (short) ((src[offset] & 0xFF)
-	            | ((src[offset + 1] & 0xFF) << 8));
-	    return value;
+		int value;
+		value = (int) (((src[offset] & 0xFF) << 24) | ((src[offset + 1] & 0xFF) << 16) | ((src[offset + 2] & 0xFF) << 8)
+				| (src[offset + 3] & 0xFF));
+		return value;
 	}
 
-	
+	public static int bytesToIntLittle(byte[] src, int offset) {
+		int value;
+		value = (int) ((src[offset] & 0xFF) | ((src[offset + 1] & 0xFF) << 8) | ((src[offset + 2] & 0xFF) << 16)
+				| ((src[offset + 3] & 0xFF) << 24));
+		return value;
+	}
+
+	public static short bytesToShortBig(byte[] src, int offset) {
+		short value;
+		value = (short) (((src[offset] & 0xFF) << 8) | (src[offset + 1] & 0xFF));
+		return value;
+	}
+
+	public static short bytesToShortLittle(byte[] src, int offset) {
+		short value;
+		value = (short) ((src[offset] & 0xFF) | ((src[offset + 1] & 0xFF) << 8));
+		return value;
+	}
+
 	/**
 	 * int转byte数组
 	 * 
@@ -287,5 +297,17 @@ public class Utils {
 		char[] tmp = cb.array();
 
 		return tmp[0];
+	}
+
+	public static String bytetoString(byte[] bytearray) {
+		String result = "";
+		char temp;
+
+		int length = bytearray.length;
+		for (int i = 0; i < length; i++) {
+			temp = (char) bytearray[i];
+			result += temp;
+		}
+		return result;
 	}
 }

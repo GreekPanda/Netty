@@ -3,6 +3,7 @@ package com.innjoo.halo.netty;
 import org.apache.log4j.Logger;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -21,14 +22,14 @@ public class NettyServer {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
              .channel(NioServerSocketChannel.class)
-             .handler(new LoggingHandler(LogLevel.INFO))
+             .childOption(ChannelOption.TCP_NODELAY, true)
+             .handler(new LoggingHandler(LogLevel.DEBUG))
              .childHandler(new NettyServerInitializer());
 
             try {
             	LOG.info("Server is running, binding port is: " + port);
 				b.bind(port).sync().channel().closeFuture().sync();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         } finally {

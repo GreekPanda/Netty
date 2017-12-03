@@ -21,22 +21,6 @@ public class HaloProto implements Serializable {
 	private byte[] data;
 	private short crc;
 	
-	public HaloProto() {
-		
-	}	
-		
-	public HaloProto(byte[] package_head, int package_len, int sender_id, int receiver_id, short sender_type,
-			short control_code, byte[] data, short crc) {
-		//super();
-		this.package_head = package_head;
-		this.package_len = package_len;
-		this.sender_id = sender_id;
-		this.receiver_id = receiver_id;
-		this.sender_type = sender_type;
-		this.control_code = control_code;
-		this.data = data;
-		this.crc = crc;
-	}
 	public byte[] getPackage_head() {
 		return package_head;
 	}

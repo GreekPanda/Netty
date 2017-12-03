@@ -1,5 +1,7 @@
 package com.innjoo.halo.service.impl;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,12 +30,12 @@ public class HaloFriendsServiceImpl implements IHaloFriendsService {
 	}
 
 	@Override
-	public HaloFriends selectByKid(Integer kid) {
-		HaloFriends hfs = new HaloFriends();
+	public HaloFriends selectByKid(Map<String, Object> map) {
+		HaloFriends hf = new HaloFriends();
 
-		hfs = haloFriendsMapper.selectByKid(kid);
+		hf = haloFriendsMapper.selectByKid(map);
 
-		return hfs;
+		return hf;
 	}
 
 	@Override
@@ -41,6 +43,12 @@ public class HaloFriendsServiceImpl implements IHaloFriendsService {
 		
 		haloFriendsMapper.insertByPrimaryId(hfs);
 		
+		return 0;
+	}
+
+	@Override
+	public int insert(HaloFriends hfs) {
+		haloFriendsMapper.insert(hfs);
 		return 0;
 	}
 	

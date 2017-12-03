@@ -21,15 +21,14 @@ public class HaloChildServiceImpl implements IHaloChildService {
 
 	// 注意此处只是查询出一个结果而不是将结果作为一个List的结果集，是否可能查询出多个结果？
 	@Override
-	public HaloChild queryHaloChildByAccountId(Integer accoutId) {
-		
+	public HaloChild selectByPrimaryKey(Integer accoutId) {
+
 		HaloChild hc = new HaloChild();
 
 		hc = (HaloChild) haloChildMapper.selectByPrimaryKey(accoutId);
 
 		return hc;
 	}
-	
 
 	@Override
 	public void updateByPrimaryKey(HaloChild hc) {
@@ -37,21 +36,27 @@ public class HaloChildServiceImpl implements IHaloChildService {
 	}
 
 	@Override
-	public void updateHaloChild(Integer id) {
-		haloChildMapper.updateHaloIdByPrimaryKey(id);
+	public void updateHaloChild(HaloChild record) {
+		haloChildMapper.updateHaloIdByPrimaryKey(record);
 	}
 
 	@Override
-	public void updateHaloIdAndRoleIdByAccountId(Integer id, String haloId, byte petId) {
-		haloChildMapper.updateHaloIdAndRoleIdByPrimaryKey(id, haloId, petId);
+	public void updateHaloIdAndRoleIdByAccountId(HaloChild record) {
+		haloChildMapper.updateHaloIdAndRoleIdByPrimaryKey(record);
 	}
 
 	@Override
 	public List<HaloChild> selectByHaloId(String haloId) {
 		List<HaloChild> listHaloChild = new ArrayList<HaloChild>();
 		listHaloChild = haloChildMapper.selectByHaloId(haloId);
-				
+
 		return listHaloChild;
+	}
+
+	@Override
+	public void updateInfoByPrimaryKey(HaloChild hc) {
+		haloChildMapper.updateInfoByPrimaryKey(hc);
+
 	}
 
 }

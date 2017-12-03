@@ -20,10 +20,8 @@
     where id = #{id,jdbcType=INTEGER}
   </delete>
   <insert id="insert" parameterType="com.innjoo.halo.model.HaloFriends" >
-    insert into halo_friends (id, kid, f_kid
-      )
-    values (#{id,jdbcType=INTEGER}, #{kid,jdbcType=INTEGER}, #{fKid,jdbcType=INTEGER}
-      )
+    insert into halo_friends (kid, f_kid)
+    values (#{kid,jdbcType=INTEGER}, #{fKid,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.innjoo.halo.model.HaloFriends" >
     insert into halo_friends
@@ -68,4 +66,10 @@
       f_kid = #{fKid,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
+   <select id="selectByKid" resultMap="BaseResultMap" parameterType="Map" >
+    select 
+    <include refid="Base_Column_List" />
+    from halo_friends
+    where kid = #{kid} and f_kid = #{fkid} 
+  </select>
 </mapper>

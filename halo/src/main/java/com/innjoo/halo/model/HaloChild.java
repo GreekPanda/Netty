@@ -15,7 +15,7 @@ public class HaloChild {
 
 	private Short weight;
 
-	private Byte gender;
+	private Integer gender;
 
 	private Integer target;
 
@@ -27,11 +27,11 @@ public class HaloChild {
 
 	private String sleepTimeEnd;
 
-	private Byte timeZone;
+	private Integer timeZone;
 
 	private String exploredStarId;
 
-	private Byte petid;
+	private Integer petid;
 
 	private Integer level;
 
@@ -39,36 +39,21 @@ public class HaloChild {
 
 	private Integer pid;
 
-	private Byte starId;
+	private Integer starId;
 
-	private Byte starLevel;
+	private Integer starLevel;
 
 	private Integer curDrinkWater;
 
-	private Byte devicelanguage;
-	
-	public HaloChild() {
-		
-	}
+	private Integer devicelanguage;
 
-	public HaloChild(String haloId, 
-			String exploredStarId, 
-			short roleId, 
-			short curDrinkLevel, 
-			short curDrinkVol, 
-			byte starId,
-			byte starLevel, 
-			short deviceLanuage) {
-		// TODO Auto-generated constructor stub
-		this.haloId = haloId;
-		this.exploredStarId = exploredStarId;
-		this.petid = (byte) roleId;
-		this.level = (int) curDrinkLevel;
-		this.curDrinkWater = (int) curDrinkVol;
-		this.starId = starId;
-		this.starLevel = starLevel;
-		this.devicelanguage = (byte) deviceLanuage;
-	}
+	private String insertTime;
+
+	private Integer status;
+
+	private Integer systemVersion;
+
+	private String ip;
 
 	public Integer getId() {
 		return id;
@@ -118,11 +103,11 @@ public class HaloChild {
 		this.weight = weight;
 	}
 
-	public Byte getGender() {
+	public Integer getGender() {
 		return gender;
 	}
 
-	public void setGender(Byte gender) {
+	public void setGender(Integer gender) {
 		this.gender = gender;
 	}
 
@@ -166,11 +151,11 @@ public class HaloChild {
 		this.sleepTimeEnd = sleepTimeEnd == null ? null : sleepTimeEnd.trim();
 	}
 
-	public Byte getTimeZone() {
+	public Integer getTimeZone() {
 		return timeZone;
 	}
 
-	public void setTimeZone(Byte timeZone) {
+	public void setTimeZone(Integer timeZone) {
 		this.timeZone = timeZone;
 	}
 
@@ -182,11 +167,11 @@ public class HaloChild {
 		this.exploredStarId = exploredStarId == null ? null : exploredStarId.trim();
 	}
 
-	public Byte getPetid() {
+	public Integer getPetid() {
 		return petid;
 	}
 
-	public void setPetid(Byte petid) {
+	public void setPetid(Integer petid) {
 		this.petid = petid;
 	}
 
@@ -214,19 +199,19 @@ public class HaloChild {
 		this.pid = pid;
 	}
 
-	public Byte getStarId() {
+	public Integer getStarId() {
 		return starId;
 	}
 
-	public void setStarId(Byte starId) {
+	public void setStarId(Integer starId) {
 		this.starId = starId;
 	}
 
-	public Byte getStarLevel() {
+	public Integer getStarLevel() {
 		return starLevel;
 	}
 
-	public void setStarLevel(Byte starLevel) {
+	public void setStarLevel(Integer starLevel) {
 		this.starLevel = starLevel;
 	}
 
@@ -238,11 +223,56 @@ public class HaloChild {
 		this.curDrinkWater = curDrinkWater;
 	}
 
-	public Byte getDevicelanguage() {
+	public Integer getDevicelanguage() {
 		return devicelanguage;
 	}
 
-	public void setDevicelanguage(Byte devicelanguage) {
+	public void setDevicelanguage(Integer devicelanguage) {
 		this.devicelanguage = devicelanguage;
 	}
+
+	public String getInsertTime() {
+		return insertTime;
+	}
+
+	public void setInsertTime(String insertTime) {
+		this.insertTime = insertTime == null ? null : insertTime.trim();
+	}
+
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+
+	public Integer getSystemVersion() {
+		return systemVersion;
+	}
+
+	public void setSystemVersion(Integer systemVersion) {
+		this.systemVersion = systemVersion;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip == null ? null : ip.trim();
+	}
+
+	@Override
+	public String toString() {
+		return "HaloChild [id=" + id + ", haloId=" + haloId + ", name=" + name + ", avatar=" + avatar + ", birth="
+				+ birth + ", weight=" + weight + ", gender=" + gender + ", target=" + target + ", schoolTimeStart="
+				+ schoolTimeStart + ", schoolTimeEnd=" + schoolTimeEnd + ", sleepTimeStart=" + sleepTimeStart
+				+ ", sleepTimeEnd=" + sleepTimeEnd + ", timeZone=" + timeZone + ", exploredStarId=" + exploredStarId
+				+ ", petid=" + petid + ", level=" + level + ", score=" + score + ", pid=" + pid + ", starId=" + starId
+				+ ", starLevel=" + starLevel + ", curDrinkWater=" + curDrinkWater + ", devicelanguage=" + devicelanguage
+				+ ", insertTime=" + insertTime + ", status=" + status + ", systemVersion=" + systemVersion + ", ip="
+				+ ip + "]";
+	}
+
 }

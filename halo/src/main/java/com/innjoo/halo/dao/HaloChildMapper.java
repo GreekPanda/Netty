@@ -19,8 +19,10 @@ public interface HaloChildMapper {
 
     int updateByPrimaryKey(HaloChild record);
     
-    int updateHaloIdByPrimaryKey(Integer id);
+    int updateHaloIdByPrimaryKey(HaloChild record);
 
-	void updateHaloIdAndRoleIdByPrimaryKey(Integer id, String haloId, byte petId);
+	void updateHaloIdAndRoleIdByPrimaryKey(HaloChild record);
+	
+	void updateInfoByPrimaryKey(HaloChild record);
     
 }

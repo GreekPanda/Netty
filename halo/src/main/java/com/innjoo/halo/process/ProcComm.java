@@ -1,7 +1,10 @@
 package com.innjoo.halo.process;
 
+import java.util.Calendar;
+
 import com.innjoo.halo.model.HaloChild;
 import com.innjoo.halo.utils.DateUtils;
+import com.innjoo.halo.utils.Utils;
 
 /**
  * @author Cash Liao
@@ -19,28 +22,35 @@ public class ProcComm {
 	public static final byte SCHOOL_START = 0x03;
 	public static final byte SCHOOL_END = 0x04;
 
+	private static int weekIndex() {
+		
+		Calendar rightNow=Calendar.getInstance();  
+        int day=rightNow.get(Calendar.DAY_OF_WEEK);
+        return day;
+	}
+	
 	// 获取本地时间，需要将年月日时分秒都填入到字节流中
-	public static byte[] getLocalTime(HaloChild hc) {
-		if (hc == null)
-			return null;
+	public static byte[] getLocalTime() {
 
 		byte[] localTime = new byte[8];
 		String dateTime = DateUtils.getDateTime();
 		short year = Short.parseShort(dateTime.split(" ")[0].split("-")[0]);
+		byte[] byteYear = new byte[2];
+		byteYear = Utils.short2Byte(year);
+		
 		byte mon = Byte.parseByte(dateTime.split(" ")[0].split("-")[1]);
 		byte day = Byte.parseByte(dateTime.split(" ")[0].split("-")[2]);
 		byte hour = Byte.parseByte(dateTime.split(" ")[1].split(":")[0]);
 		byte min = Byte.parseByte(dateTime.split(" ")[1].split(":")[1]);
 		byte sec = Byte.parseByte(dateTime.split(" ")[1].split(":")[2]);
 
-		// TODO:year存入字节数组有bug
-		localTime[0] = (byte) ((year & 0xff00) >> 8);
-		localTime[1] = (byte) (year & 0xff);
+		System.arraycopy(byteYear, 0, localTime, 0, 2);
 		localTime[2] = mon;
 		localTime[3] = day;
 		localTime[4] = hour;
 		localTime[5] = min;
 		localTime[6] = sec;
+		localTime[7] = (byte)weekIndex();
 
 		return localTime;
 	}
@@ -59,11 +69,9 @@ public class ProcComm {
 
 		byte[] sleepStartTime = new byte[8];
 		
-		if (hc.getSleepTimeStart() != null) {
-			// TODO:字符串中存放时间的格式，数据库中式0:0格式，所以可以使用“:”分开，获取sleep_time的小时和分钟
+		if (hc.getSleepTimeStart() != null) {			
 			formatTime(sleepStartTime, hc, SLEEP_START, false);
-		} else {
-			// 年、月、日、时、分、秒、星期均为0
+		} else {			
 			formatTime(sleepStartTime, hc, SLEEP_START, true);
 		}
 
@@ -142,7 +150,8 @@ public class ProcComm {
 		if (flag == SLEEP_START) {
 			if (!isDefault) {
 				// 时
-				byte[] hour = hc.getSleepTimeStart().split(":")[0].getBytes();
+				byte[] hour = new byte[1];
+				hour = hc.getSleepTimeStart().split(":")[0].getBytes();
 				System.arraycopy(hour, 0, timeResp, 4, hour.length);
 
 				// 分
