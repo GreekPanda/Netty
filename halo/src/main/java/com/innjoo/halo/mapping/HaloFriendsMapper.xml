@@ -72,4 +72,25 @@
     from halo_friends
     where kid = #{kid} and f_kid = #{fkid} 
   </select>
+  
+  <insert id="insertWithKid" parameterType="Map" >
+    insert into halo_friends
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+       <if test="kid != null" >
+        kid,
+      </if>
+      <if test="fKid != null" >
+        f_kid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="kid != null" >
+        #{kid,jdbcType=INTEGER},
+      </if>
+      <if test="fKid != null" >
+        #{fKid,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  
 </mapper>

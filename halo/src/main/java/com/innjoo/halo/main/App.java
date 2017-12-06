@@ -1,9 +1,7 @@
 package com.innjoo.halo.main;
 
-
-import org.apache.log4j.Logger;
-
 import com.innjoo.halo.ctx.AppCtx;
+import com.innjoo.halo.ctx.PropCtx;
 import com.innjoo.halo.netty.NettyServer;
 
 /**
@@ -11,10 +9,8 @@ import com.innjoo.halo.netty.NettyServer;
  *
  */
 public class App {
-	private static final Logger LOG = Logger.getLogger(App.class);
-	
 	public static void main(String[] args) {
 		AppCtx.getInstance();
-		NettyServer.start(9501);
+		NettyServer.start(Integer.parseInt(PropCtx.getPropInstance().getProperty("host.port")));
 	}
 }

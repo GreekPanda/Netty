@@ -51,6 +51,12 @@ public class HaloFriendsServiceImpl implements IHaloFriendsService {
 		haloFriendsMapper.insert(hfs);
 		return 0;
 	}
+
+	@Override
+	public int insertWithKid(Map<String, Object> map) {
+		haloFriendsMapper.insertWithKid(map);
+		return 0;
+	}
 	
 	
 

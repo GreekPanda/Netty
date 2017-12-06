@@ -8,12 +8,17 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.innjoo.halo.ctx.PropCtx;
 import com.innjoo.halo.model.HaloChild;
+import com.innjoo.halo.model.HaloHourWater;
 import com.innjoo.halo.process.MakeFriends;
 import com.innjoo.halo.process.OtherSetting;
 import com.innjoo.halo.process.RecoverProc;
@@ -21,7 +26,9 @@ import com.innjoo.halo.process.ReqLinkProc;
 import com.innjoo.halo.proto.HaloProto;
 import com.innjoo.halo.proto.ProtoOpType;
 import com.innjoo.halo.proto.ResultData;
+import com.innjoo.halo.utils.DateUtils;
 import com.innjoo.halo.utils.Encryption;
+import com.innjoo.halo.utils.PropertyUtils;
 import com.innjoo.halo.utils.Utils;
 
 import io.netty.buffer.ByteBuf;
@@ -45,7 +52,6 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		// 从客户端接收到二进制流进行解析
 
 		// 传输报文格式：a8package_head/Npackage_len/Nsender_id/Nreceiver_id/nsender_type/ncontorl_code/a{$length}data/ncrc
-
 		int len = in.readableBytes();
 
 		if (in == null || len <= 0) {
@@ -58,72 +64,111 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		// 如果报文小于14字节，也就是小于头部长度，直接丢弃
 		if (in.readableBytes() >= ProtoOpType.HALO_PACKAGE_HEADRE_LEN + 12) {
 
+			// byte[] byteTmp = new byte[144];
+			// in.readBytes(byteTmp, 0, 144);
+			// System.out.println(Arrays.toString(byteTmp));
+
 			// 1.获取头部的headerId，一般都是halohalo
 			byte[] headerId = new byte[8];
 			in.readBytes(headerId);
 
 			// 如果headerId不是halolhalo，直接返回不处理
 			String strHeaderId = new String(headerId);
-			LOG.info(strHeaderId);
 
 			if (!strHeaderId.equals("halohalo"))
 				return;
 
+			int package_len = 0;
+			int senderId = 0;
+			int recvId = 0;
+			int senderType = 0;
+			short ctrlCode = 0;
+			short crc = 0;
 			// 2.获取整个报文的长度，由于有高低字节序的问题，所以需要每一个字节转换，客户端默认是大端
 			byte[] bytePackage_len = new byte[4];
 			in.getBytes(8, bytePackage_len, 0, 4);
-			// int package_len = Utils.byte2Int(bytePackage_len);
 
-			int package_len = Utils.bytesToIntLittle(bytePackage_len, 0);
-			// System.out.println("********************* package len : " + package_len);
+			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+				package_len = Utils.bytesToIntLittle(bytePackage_len, 0);
+			else
+				package_len = Utils.bytesToIntBig(bytePackage_len, 0);
 
 			byte[] byteSenderId = new byte[4];
 			in.getBytes(12, byteSenderId, 0, 4);
-			int senderId = Utils.bytesToIntLittle(byteSenderId, 0);
+			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+				senderId = Utils.bytesToIntLittle(byteSenderId, 0);
+			else
+				senderId = Utils.bytesToIntBig(byteSenderId, 0);
 
 			byte[] byteRecvId = new byte[4];
 			in.getBytes(16, byteRecvId, 0, 4);
-			int recvId = Utils.bytesToIntLittle(byteRecvId, 0);
+			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+				recvId = Utils.bytesToIntLittle(byteRecvId, 0);
+			else
+				recvId = Utils.bytesToIntBig(byteRecvId, 0);
 
 			byte[] byteSenderType = new byte[2];
 			in.getBytes(20, byteSenderType, 0, 2);
-			int senderType = Utils.bytesToShortLittle(byteSenderType, 0);
+			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+				senderType = Utils.bytesToShortLittle(byteSenderType, 0);
+			else
+				senderType = Utils.bytesToShortBig(byteSenderType, 0);
 
 			// 和客户端数据中的操作码
 			byte[] byteCtrlCode = new byte[2];
 			in.getBytes(22, byteCtrlCode, 0, 2);
-			short ctrlCode = Utils.bytesToShortLittle(byteCtrlCode, 0);
+			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+				ctrlCode = Utils.bytesToShortLittle(byteCtrlCode, 0);
+			else
+				ctrlCode = Utils.bytesToShortBig(byteCtrlCode, 0);
 
 			// 3.获取数据报文的长度，即整个整个包长减去包头26字节（headerId(8) + package_len(4) + sender_id(4)
 			// recv_id(4)+sender_type(2) + control_code (2) + crc(2) 字节）
-			short rawDataLen = (short) (package_len - 24);
-			// System.out.println("********************* Raw data len : " + rawDataLen);
+			short rawDataLen = (short) (package_len - 26);
 			if (rawDataLen < 0) {
 				LOG.fatal("数据长度不正确: + " + rawDataLen);
+				in.resetReaderIndex();
 				return;
 			}
 
-			byte[] clientData = new byte[rawDataLen];
-
 			// 从数据流的第24字节开始读取整个数据长度
+			byte[] clientData = new byte[rawDataLen];
 			in.getBytes(24, clientData, 0, rawDataLen);
 
-			// 4.获取原来的crc
-			short crc = in.getShort(package_len - 2);
+			// 最后两个字节是crc
+			byte[] byteCrc = new byte[2];
+			in.getBytes(24 + rawDataLen, byteCrc, 0, 2);
+			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+				crc = Utils.bytesToShortLittle(byteCrc, 0);
+			else
+				crc = Utils.bytesToShortBig(byteCrc, 0);
+			// System.arraycopy(tmp, 142, byteCrc, 0, 2);
+			// short crc =
+			// ByteBuffer.wrap(byteCrc).order(java.nio.ByteOrder.LITTLE_ENDIAN).getShort();
+
+			LOG.info("从客户端接收报文，包头标示： " + strHeaderId + ",报文长度：" + package_len + ",发送方Id：" + senderId + ",接收方Id: "
+					+ recvId + ",发送者类型: " + senderType + ",控制码： " + ctrlCode + ",数据长度: " + rawDataLen + ", CRC: "
+					+ crc);
+
+			LOG.info("客户端数据内容： " + Utils.bytesToHexString(clientData));
 
 			// 如果重新生成的crc与原来不一致，则直接返回不处理
 			byte[] packageNoCrc = new byte[package_len - 2];
-			in.getBytes(package_len - 2, packageNoCrc, 0, package_len - 2);
-			// crc不包括crc字段，所以长度需要减去2字节
-			short genCrc = Encryption.crc16(Utils.getChars(packageNoCrc), (byte) (package_len - 2));
-			// if (crc != genCrc) {
-			// //并将错误的结果直接返回给客户端
-			// out.add(makeHaloProto(null, 0, ProtoOpType.SERVER_ACK_INVALID));
+			in.getBytes(12, packageNoCrc, 0, package_len - 2);
+
+			// TODO:CRC这里有点问题，客户端上报之后貌似不正确
+			// if (!isCrcRight(packageNoCrc, crc)) {
+			// // 并将错误的结果直接返回给客户端
+			// out.add(makeHaloProto(null, 0, ProtoOpType.SERVER_ACK_INVALID, 0xf000001));
+			// // in.resetReaderIndex();
 			// return;
 			// }
 
 			// 处理所有的分支流程
-			processCtrlCode(ctrlCode, clientData, out);
+			if(ctrlCode == 4)
+				processHistoryDetail(senderId, package_len, clientData, out);
+			else
+				processCtrlCode(ctrlCode, clientData, out);
 
 		} else {
 			in.resetReaderIndex();
@@ -131,7 +176,19 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		}
 	}
 
+	private boolean isCrcRight(byte[] in, short originCrc) {
+		short genCrc = (short) Encryption.crc16((in), (short) in.length);
+		LOG.debug("Origin crc: " + originCrc + ", new crc: " + genCrc);
+		if (genCrc == originCrc)
+			return true;
+		else
+			return false;
+	}
+
 	private void processReqLink(byte[] in, HaloChild hc, ResultData rd, List<Object> out) {
+		if (in == null || in.length <= 0)
+			return;
+
 		try {
 			ReqLinkProc.parseDataFromClientPackage(in, hc, rd);
 
@@ -161,14 +218,21 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		}
 	}
 
-	private void processHistoryDetail(byte[] in, List<Object> out) {
-
+	
+	
+	//TODO:这里还是有点不太好处理
+	private void processHistoryDetail(int senderId, int package_len, byte[] in, List<Object> out) {
+		if(in == null || in.length <= 0)
+			return;
+		
 	}
 
 	private void processVersionUpdate(byte[] in, List<Object> out) {
 
+		if (in == null || in.length <= 0)
+			return;
 		// 获取文件名
-		String fileName = "e:/pack/";
+		String fileName = PropCtx.getPropInstance().getProperty("host.dir");
 		int fileNumber = 0;
 		StringBuilder sb = new StringBuilder();
 		sb.append(fileName);
@@ -183,7 +247,7 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		try {
 			byte[] content = Files.readAllBytes(path);
 			fileLen = content.length;
-			crc = Encryption.crc16(Utils.getChars(content), (short) fileLen);
+			crc = (short) Encryption.crc16(content, (short) fileLen);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -202,17 +266,23 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		if (in == null || in.length <= 0)
 			return;
 
-		String fileName = "/www/thinkSwooleFirst/log/";
-
+		String fileName = PropCtx.getPropInstance().getProperty("host.dir");
+		short feedback = 0;
+		int packageName = 0;
 		// 报文内容格式：nfeedback/NpackageName，6个字节
 		byte[] byteFeedback = new byte[2];
 		System.arraycopy(in, 0, byteFeedback, 0, 2);
-		short feedback = ByteBuffer.wrap(byteFeedback).order(java.nio.ByteOrder.LITTLE_ENDIAN).getShort();
+		if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+			feedback = ByteBuffer.wrap(byteFeedback).order(java.nio.ByteOrder.LITTLE_ENDIAN).getShort();
+		else
+			feedback = ByteBuffer.wrap(byteFeedback).order(java.nio.ByteOrder.BIG_ENDIAN).getShort();
 
 		byte[] bytePackageName = new byte[4];
 		System.arraycopy(in, 2, bytePackageName, 0, 4);
-		int packageName = ByteBuffer.wrap(bytePackageName).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
-
+		if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+			packageName = ByteBuffer.wrap(bytePackageName).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+		else
+			packageName = ByteBuffer.wrap(bytePackageName).order(java.nio.ByteOrder.BIG_ENDIAN).getInt();
 		// 不知道这个242是什么意思，原有的PHP代码就是这个
 		if (feedback == 242) {
 			byte[] emptyData = new byte[] {};
@@ -235,17 +305,25 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		if (in == null || in.length <= 0)
 			return;
 
+		int count = 0;
+		int packageName = 0;
 		// 报文格式Ncount/NpackageName，8个字节
 		byte[] byteCount = new byte[4];
 		System.arraycopy(in, 0, byteCount, 0, 4);
-		int count = ByteBuffer.wrap(byteCount).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+		if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+			count = ByteBuffer.wrap(byteCount).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+		else
+			count = ByteBuffer.wrap(byteCount).order(java.nio.ByteOrder.BIG_ENDIAN).getInt();
 
 		byte[] bytePackageName = new byte[4];
 		System.arraycopy(in, 4, bytePackageName, 0, 4);
-		int packageName = ByteBuffer.wrap(byteCount).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+		if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+			packageName = ByteBuffer.wrap(byteCount).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+		else
+			packageName = ByteBuffer.wrap(byteCount).order(java.nio.ByteOrder.BIG_ENDIAN).getInt();
 
 		// String fileName = "/www/thinkSwooleFirst/log/";
-		String fileName = "e:/package";
+		String fileName = PropCtx.getPropInstance().getProperty("host.dir");
 		StringBuilder sb = new StringBuilder();
 		sb.append(fileName + packageName + ".pack");
 
@@ -303,7 +381,7 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 
 		int dataLen = 0;
 
-		String fileName = "e:/pack/jiqiren.png";
+		String fileName = PropCtx.getPropInstance().getProperty("host.dir") + "jiqiren.png";
 
 		Path path = Paths.get(fileName);
 		try {
@@ -333,11 +411,15 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		byte[] bytePos = new byte[4];
 		System.arraycopy(in, 0, bytePos, 0, 4);
 
-		int pos = ByteBuffer.wrap(bytePos).order(java.nio.ByteOrder.LITTLE_ENDIAN).getShort();
+		int pos = 0;
+		if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+			pos = ByteBuffer.wrap(bytePos).order(java.nio.ByteOrder.LITTLE_ENDIAN).getShort();
+		else
+			pos = ByteBuffer.wrap(bytePos).order(java.nio.ByteOrder.BIG_ENDIAN).getShort();
 
 		int dataLen = 0;
 		// String fileName = "/www/thinkSwooleFirst/log/jiqiren.png";
-		String fileName = "e:/packge/jiqiren.png";
+		String fileName = PropCtx.getPropInstance().getProperty("host.dir") + "jiqiren.png";
 		InputStream ins = null;
 		try {
 			File f = new File(fileName);
@@ -387,9 +469,7 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		if (in == null || in.length == 0)
 			return;
 
-		byte[] data = new byte[] {};
-
-		out.add(makeHaloProto(data, data.length, ProtoOpType.SERVER_ACK_INVALID, 0xf0000001));
+		out.add(makeHaloProto(null, 0, ProtoOpType.SERVER_ACK_INVALID, 0xf0000001));
 
 	}
 
@@ -430,12 +510,10 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			processReqLink(in, hc, rd, out);
 			break;
 
-		// 4
-		// 原有的PHP流程很晦涩，不能理解其逻辑是什么
-		// TODO:需要跟水杯端沟通这个功能到底是什么作用？
-		case ProtoOpType.HALO_CMD_ACK_HISTORYDETAIL_SYNC:
-			processHistoryDetail(in, out);
-			break;
+//		// 4
+//		case ProtoOpType.HALO_CMD_ACK_HISTORYDETAIL_SYNC:
+//			processHistoryDetail(in, out);
+//			break;
 
 		// 7
 		case ProtoOpType.HALO_CMD_ACK_VERSIONUPDATE:
@@ -500,12 +578,12 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 
 		// a8package_head/Npackage_len/Nsender_id/Nreceiver_id/nsender_type/ncontorl_code/a{$length}data/ncrc
 		// 将所有的要发送的数据全部拷贝到一个数组中然后计算crc
-		byte[] transPackage = new byte[sendData.length + ProtoOpType.HALO_PACKAGE_HEADRE_LEN + 12];
+		byte[] transPackage = new byte[dataLen + ProtoOpType.HALO_PACKAGE_HEADRE_LEN + 12];
 
 		byte[] servId = "servhalo".getBytes();
 		System.arraycopy(servId, 0, transPackage, 0, servId.length);
 
-		int svrSendPackageLen = sendData.length + 14 + 12;
+		int svrSendPackageLen = dataLen + 14 + 12;
 		byte[] byteSvrSendPackageLen = new byte[4];
 		byteSvrSendPackageLen = Utils.int2Byte(svrSendPackageLen);
 		System.arraycopy(byteSvrSendPackageLen, 0, transPackage, servId.length, 4);
@@ -542,10 +620,15 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			hp.setData(sendData);
 			System.arraycopy(sendData, 0, transPackage, servId.length + 4 + 4 + 4 + 2 + 2, sendData.length);
 			// 将整个报文存放在数组中，然后全部计算crc
-			short sendCrc = Encryption.crc16(Utils.getChars(transPackage), (short) transPackage.length);
-			hp.setCrc(sendCrc);
+			byte[] tmpCrcData = new byte[svrSendPackageLen - 14];
+			System.arraycopy(transPackage, 12, tmpCrcData, 0, svrSendPackageLen - 14);
+			LOG.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@crc data: " + Arrays.toString(tmpCrcData));
+			// short sendCrc = (short) Short.toUnsignedInt((short)
+			// Encryption.crc16(tmpCrcData, (short) (tmpCrcData.length)));
+			// String strCrc = Encryption.getCrc(tmpCrcData);
+			// hp.setCrc(Short.parseShort(Integer.toHexString(sendCrc), 16));
 
-			LOG.debug("#############HaloProto : " + hp.toString());
+			LOG.info("发送给客户端报文(数据内容不为空) : " + hp.toString());
 
 		} else {
 			hp = new HaloProto();
@@ -556,15 +639,17 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			hp.setPackage_head(servId);
 			hp.setReceiver_id(clntRecvId);
 			hp.setSender_type(svrSenderType);
-			hp.setControl_code((short) 0x0023);
+			hp.setControl_code(ctrlCode);
 			hp.setData(new byte[] {});
-			short sendCrc = Encryption.crc16(Utils.getChars(transPackage), (short) transPackage.length);
-			hp.setCrc(sendCrc);
+			byte[] tmpCrcData = new byte[svrSendPackageLen - 14];
+			System.arraycopy(transPackage, 12, tmpCrcData, 0, svrSendPackageLen - 14);
+			LOG.debug("@@@@@@@@@@@@$$$$$$@@@@@@@@crc data: " + Arrays.toString(tmpCrcData));
+			// short sendCrc = (short)Encryption.crc16(tmpCrcData, (short) 2);
+			// hp.setCrc(sendCrc);
 
-			LOG.debug("@@@@@@@@@@@@@@@@HaloProto : " + hp.toString());
+			LOG.info("发送给客户端报文 (数据内容为空): " + hp.toString());
 		}
 
-		// LOG.info(hp.toString());
 		return hp;
 	}
 

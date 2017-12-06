@@ -11,4 +11,5 @@ public interface IHaloFriendsService {
 	HaloFriends selectByKid(Map<String, Object> map);
 	int insertByPrimaryId(HaloFriends hfs);
 	int insert(HaloFriends hfs);
+	int insertWithKid(Map<String, Object> map);
 }

@@ -20,4 +20,6 @@ public interface HaloFriendsMapper {
     HaloFriends selectByKid(Map<String, Object> map);
     
     int insertByPrimaryId(HaloFriends record);
+
+	void insertWithKid(Map<String, Object> map);
 }

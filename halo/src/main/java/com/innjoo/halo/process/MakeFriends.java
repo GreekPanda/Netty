@@ -7,8 +7,10 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.innjoo.halo.ctx.AppCtx;
+import com.innjoo.halo.ctx.PropCtx;
 import com.innjoo.halo.model.HaloFriends;
 import com.innjoo.halo.service.IHaloFriendsService;
+import com.innjoo.halo.utils.PropertyUtils;
 import com.innjoo.halo.utils.Utils;
 
 public class MakeFriends {
@@ -17,6 +19,7 @@ public class MakeFriends {
 
 	private final static IHaloFriendsService haloFriendsService = (IHaloFriendsService) AppCtx.getInstance()
 			.getBean("haloFriendsService");
+	
 
 	public static void proc(byte[] in, byte[] out) {
 
@@ -24,13 +27,21 @@ public class MakeFriends {
 			return;
 
 		// 报文格式Naccount/Nfriend_account，8个字节
+		int accountId = 0;
+		int friendAccountId = 0;
 		byte[] byteAccountId = new byte[4];
 		System.arraycopy(in, 0, byteAccountId, 0, 4);
-		int accountId = ByteBuffer.wrap(byteAccountId).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+		if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+			accountId = ByteBuffer.wrap(byteAccountId).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+		else
+			accountId = ByteBuffer.wrap(byteAccountId).order(java.nio.ByteOrder.BIG_ENDIAN).getInt();
 
 		byte[] byteFriendAccountId = new byte[4];
 		System.arraycopy(in, 4, byteFriendAccountId, 0, 4);
-		int friendAccountId = ByteBuffer.wrap(byteFriendAccountId).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+		if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
+			friendAccountId = ByteBuffer.wrap(byteFriendAccountId).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+		else
+			friendAccountId = ByteBuffer.wrap(byteFriendAccountId).order(java.nio.ByteOrder.BIG_ENDIAN).getInt();
 
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("kid", accountId);
