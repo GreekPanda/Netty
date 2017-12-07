@@ -1,5 +1,7 @@
 package com.innjoo.halo.dao;
 
+import java.util.Map;
+
 import com.innjoo.halo.model.HaloHourWater;
 
 public interface HaloHourWaterMapper {
@@ -14,4 +16,8 @@ public interface HaloHourWaterMapper {
     int updateByPrimaryKeySelective(HaloHourWater record);
 
     int updateByPrimaryKey(HaloHourWater record);
+    
+    HaloHourWater selectByKidAndHour(Map<String, Object> map);
+    
+    int updateDrinkWaterByPrimaryKey(HaloHourWater record);
 }

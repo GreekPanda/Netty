@@ -70,7 +70,7 @@
     select 
     <include refid="Base_Column_List" />
     from halo_friends
-    where kid = #{kid} and f_kid = #{fkid} 
+    where kid = #{kid, jdbcType=INTEGER} and f_kid = #{fKid, jdbcType=INTEGER} 
   </select>
   
   <insert id="insertWithKid" parameterType="Map" >

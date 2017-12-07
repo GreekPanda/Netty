@@ -45,7 +45,7 @@ public class MakeFriends {
 
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("kid", accountId);
-		map.put("fkid", friendAccountId);
+		map.put("fKid", friendAccountId);
 
 		HaloFriends hfs = haloFriendsService.selectByKid(map);
 

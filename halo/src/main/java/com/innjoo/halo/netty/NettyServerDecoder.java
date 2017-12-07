@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import com.innjoo.halo.ctx.PropCtx;
 import com.innjoo.halo.model.HaloChild;
 import com.innjoo.halo.model.HaloHourWater;
+import com.innjoo.halo.process.DrinkHistoryProc;
 import com.innjoo.halo.process.MakeFriends;
 import com.innjoo.halo.process.OtherSetting;
 import com.innjoo.halo.process.RecoverProc;
@@ -142,9 +143,6 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 				crc = Utils.bytesToShortLittle(byteCrc, 0);
 			else
 				crc = Utils.bytesToShortBig(byteCrc, 0);
-			// System.arraycopy(tmp, 142, byteCrc, 0, 2);
-			// short crc =
-			// ByteBuffer.wrap(byteCrc).order(java.nio.ByteOrder.LITTLE_ENDIAN).getShort();
 
 			LOG.info("从客户端接收报文，包头标示： " + strHeaderId + ",报文长度：" + package_len + ",发送方Id：" + senderId + ",接收方Id: "
 					+ recvId + ",发送者类型: " + senderType + ",控制码： " + ctrlCode + ",数据长度: " + rawDataLen + ", CRC: "
@@ -157,15 +155,15 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			in.getBytes(12, packageNoCrc, 0, package_len - 2);
 
 			// TODO:CRC这里有点问题，客户端上报之后貌似不正确
-			// if (!isCrcRight(packageNoCrc, crc)) {
+			if (!isCrcRight(packageNoCrc, crc)) {
 			// // 并将错误的结果直接返回给客户端
 			// out.add(makeHaloProto(null, 0, ProtoOpType.SERVER_ACK_INVALID, 0xf000001));
 			// // in.resetReaderIndex();
 			// return;
-			// }
+			 }
 
 			// 处理所有的分支流程
-			if(ctrlCode == 4)
+			if (ctrlCode == 4)
 				processHistoryDetail(senderId, package_len, clientData, out);
 			else
 				processCtrlCode(ctrlCode, clientData, out);
@@ -218,13 +216,16 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		}
 	}
 
-	
-	
-	//TODO:这里还是有点不太好处理
 	private void processHistoryDetail(int senderId, int package_len, byte[] in, List<Object> out) {
-		if(in == null || in.length <= 0)
+		if (in == null || in.length <= 0)
 			return;
-		
+
+		byte[] data = new byte[4];
+		int len = (package_len - 14) / 10;
+		data = Utils.int2Byte(len);
+
+		DrinkHistoryProc.proc(senderId, package_len, in, data);
+		out.add(makeHaloProto(data, data.length, ProtoOpType.SERVER_CMD_ACK_HISTORYDETAIL_ACCEPT, 0xf0000001));
 	}
 
 	private void processVersionUpdate(byte[] in, List<Object> out) {
@@ -510,10 +511,10 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			processReqLink(in, hc, rd, out);
 			break;
 
-//		// 4
-//		case ProtoOpType.HALO_CMD_ACK_HISTORYDETAIL_SYNC:
-//			processHistoryDetail(in, out);
-//			break;
+		// // 4
+		// case ProtoOpType.HALO_CMD_ACK_HISTORYDETAIL_SYNC:
+		// processHistoryDetail(in, out);
+		// break;
 
 		// 7
 		case ProtoOpType.HALO_CMD_ACK_VERSIONUPDATE:

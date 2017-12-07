@@ -17,7 +17,8 @@ public class Encryption {
 		short lwCrc, lwData;
 		int i = 0;
 		int bitPos = 0;
-		lwCrc = (short) (pchMsg[0] * 256 + pchMsg[1]);
+		//lwCrc = (short) (pchMsg[0] * 256 + pchMsg[1]);
+		lwCrc = (short) (pchMsg[0] + pchMsg[1]);
 		for (i = 2; i <= (wDataLen - 1); i++) {
 			lwData = (short) pchMsg[i];
 			bitPos = 8;

@@ -114,4 +114,15 @@
       upload_time = #{uploadTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}
   </update>
+  <update id="updateDrinkWaterByPrimaryKey" parameterType="com.innjoo.halo.model.HaloHourWater" >
+    update halo_hour_water
+    set water = #{water,jdbcType=INTEGER}     
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+   <select id="selectByKidAndHour" resultMap="BaseResultMap" parameterType="Map" >
+    select 
+    <include refid="Base_Column_List" />
+    from halo_hour_water
+    where kid = #{kid,jdbcType=INTEGER} and type_time = #{typeTime,jdbcType=INTEGER}
+  </select>
 </mapper>

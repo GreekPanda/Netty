@@ -120,7 +120,7 @@ http://www.springframework.org/schema/aop/spring-aop.xsd
 			pointcut-ref="druid-stat-pointcut" />
 	</aop:config>
 
-	<!-- id="multipartResolver"必须是multipartResolver -->
+	<!-- id="multipartResolver"必须是multipartResolver 
 	<bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
 		<property name="defaultEncoding">
@@ -132,7 +132,7 @@ http://www.springframework.org/schema/aop/spring-aop.xsd
 		<property name="maxInMemorySize">
 			<value>40960</value>
 		</property>
-	</bean>
+	</bean>-->
 	
 	<!-- 全注解方式 -->
 	<tx:annotation-driven transaction-manager="transactionManagerOutter" />

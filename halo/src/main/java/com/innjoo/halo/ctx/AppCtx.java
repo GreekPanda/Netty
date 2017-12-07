@@ -16,6 +16,8 @@ public class AppCtx {
 	public static String[] xmlList = new String[] { "spring.xml", "spring-mybatis.xml" };
 
 	private static ApplicationContext instance = new ClassPathXmlApplicationContext(xmlList);
+	
+	private AppCtx() {}
 
 	public static synchronized ApplicationContext getInstance() {
 		if (instance == null)
