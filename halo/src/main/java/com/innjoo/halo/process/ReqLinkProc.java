@@ -300,7 +300,7 @@ public class ReqLinkProc {
 			int friend4 = 0;
 			int friend5 = 0;
 			byte[] byteFriend1 = new byte[4];
-			System.arraycopy(in, 97, byteFriend1, 0, 4);		
+			System.arraycopy(in, 98, byteFriend1, 0, 4);		
 			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
 				friend1 = ByteBuffer.wrap(byteFriend1).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
 			else
@@ -308,7 +308,7 @@ public class ReqLinkProc {
 
 			// 21. friend2，102字节开始，长度为4个字节
 			byte[] byteFriend2 = new byte[4];
-			System.arraycopy(in, 101, byteFriend2, 0, 4);
+			System.arraycopy(in, 102, byteFriend2, 0, 4);
 			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
 				friend2 = ByteBuffer.wrap(byteFriend2).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
 			else
@@ -316,14 +316,14 @@ public class ReqLinkProc {
 
 			// 22. friend3，106字节开始，长度为4个字节
 			byte[] byteFriend3 = new byte[4];
-			System.arraycopy(in, 105, byteFriend3, 0, 4);
+			System.arraycopy(in, 106, byteFriend3, 0, 4);
 			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
 				friend3 = ByteBuffer.wrap(byteFriend3).order(java.nio.ByteOrder.LITTLE_ENDIAN).getShort();
 			else
 				friend3 = ByteBuffer.wrap(byteFriend3).order(java.nio.ByteOrder.BIG_ENDIAN).getShort();
 			// 23. friend4，116字节开始，长度为4个字节
 			byte[] byteFriend4 = new byte[4];
-			System.arraycopy(in, 109, byteFriend4, 0, 4);
+			System.arraycopy(in, 110, byteFriend4, 0, 4);
 			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
 				friend4 = ByteBuffer.wrap(byteFriend4).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
 			else
@@ -331,7 +331,7 @@ public class ReqLinkProc {
 
 			// 24. friend5，120字节开始，长度为4个字节
 			byte[] byteFriend5 = new byte[4];
-			System.arraycopy(in, 113, byteFriend5, 0, 4);
+			System.arraycopy(in, 114, byteFriend5, 0, 4);
 			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
 				friend5 = ByteBuffer.wrap(byteFriend5).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
 			else

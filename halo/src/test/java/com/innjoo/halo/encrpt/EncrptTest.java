@@ -22,7 +22,7 @@ public class EncrptTest {
 			//System.out.println(str);
 			byte[] cData = new byte[] { (byte) 0xf0, 0x0, 0x0, 0x01, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, (byte) 0xf0, 0x3,
 					0x12, 0x34, 0x56, 0x78 };
-			int crc = Encryption.crc16(cData, (short) cData.length);
+			//int crc = Encryption.crc16(cData, (short) cData.length);
 			//System.out.println(crc);
 			
 			

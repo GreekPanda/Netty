@@ -14,7 +14,7 @@ import com.innjoo.halo.utils.Utils;
 
 public class OtherSetting {
 
-	private static final Logger LOG = Logger.getLogger(OtherSetting.class);
+	private static final Logger log = Logger.getLogger(OtherSetting.class);
 
 	private final static IHaloChildService haloChildService = (IHaloChildService) AppCtx.getInstance()
 			.getBean("haloChildService");
@@ -27,20 +27,23 @@ public class OtherSetting {
 		byte[] byteAccountId = new byte[4];
 		System.arraycopy(in, 0, byteAccountId, 0, 4);
 		if (PropCtx.getPropInstance().getProperty("host.edian").equals("little"))
-			ByteBuffer.wrap(byteAccountId).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+			accountId = ByteBuffer.wrap(byteAccountId).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
 		else
-			ByteBuffer.wrap(byteAccountId).order(java.nio.ByteOrder.BIG_ENDIAN).getInt();
+			accountId = ByteBuffer.wrap(byteAccountId).order(java.nio.ByteOrder.BIG_ENDIAN).getInt();
 
 		byte[] byteRoleId = new byte[2];
 		System.arraycopy(in, 4, byteRoleId, 0, 2);
 		if (PropCtx.getPropInstance().getProperty("host.edian").equals("little"))
-			ByteBuffer.wrap(byteRoleId).order(java.nio.ByteOrder.LITTLE_ENDIAN).getShort();
+			roleId = ByteBuffer.wrap(byteRoleId).order(java.nio.ByteOrder.LITTLE_ENDIAN).getShort();
 		else
-			ByteBuffer.wrap(byteRoleId).order(java.nio.ByteOrder.BIG_ENDIAN).getShort();
+			roleId = ByteBuffer.wrap(byteRoleId).order(java.nio.ByteOrder.BIG_ENDIAN).getShort();
 
-		byte[] byteHaloId = new byte[12];
-		System.arraycopy(in, 6, byteHaloId, 0, 12);
-		String haloId = new String(byteHaloId);
+		//实际情况是水杯并没有按照真实的haloID传入
+//		byte[] byteHaloId = new byte[12];
+//		System.arraycopy(in, 6, byteHaloId, 0, 12);
+//		String haloId = new String(byteHaloId);
+		
+		log.debug("accountId : " + accountId + ",roleId: " + roleId);
 
 		// 根据accountId查询数据库
 		HaloChild hc = new HaloChild();

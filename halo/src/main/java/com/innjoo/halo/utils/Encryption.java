@@ -13,86 +13,34 @@ public class Encryption {
 		return (id >> 1) | (0x98 << 24);
 	}
 
-	public static int crc16(byte[] pchMsg, short wDataLen) {
-		short lwCrc, lwData;
-		int i = 0;
-		int bitPos = 0;
-		//lwCrc = (short) (pchMsg[0] * 256 + pchMsg[1]);
-		lwCrc = (short) (pchMsg[0] + pchMsg[1]);
-		for (i = 2; i <= (wDataLen - 1); i++) {
-			lwData = (short) pchMsg[i];
-			bitPos = 8;
-			do {
-				if ((lwCrc & 0x8000) == 0x8000) {
-					lwCrc = (short) (lwCrc << 1);
-					if (((lwData >> (bitPos - 1)) & 0x1) == 0x1) {
-						lwCrc = (short) (lwCrc | 1);
+	public static Short getcrc16(byte[] string, int length) {
+
+		short crc = (short) (string[0] * 256 + string[1]);
+
+		short lwData = 0;
+		for (int i = 2; i <= length - 1; i++) {
+			lwData = string[i];
+			for (int j = 8; j != 0; j--) {
+				if ((crc & 0x8000) == 0x8000) {
+					crc <<= 1;
+					if (((lwData >> (j - 1)) & 0x1) == 0x1) {
+						crc = (short) (crc | 1);
 					}
-					lwCrc = (short) (lwCrc ^ 0x1021);
+					crc ^= 0x1021;
 				} else {
-					lwCrc = (short) (lwCrc << 1);
-					if (((lwData >> (bitPos - 1)) & 1) == 1) {
-						lwCrc = (short) (lwCrc | 1);
+					crc <<= 1;
+					if (((lwData >> (j - 1)) & 1) == 1) {
+						crc = (short) (crc | 1);
 					}
 				}
-				bitPos--;
-			} while (bitPos != 0);
-		}
-
-		return (lwCrc % 0x10000);
-	}
-	
-	public static short crc161(byte[] pchMsg, short wDataLen) {
-		short lwCrc, lwData;
-		int i = 0;
-		int bitPos = 0;
-		lwCrc = (short) (pchMsg[0] * 256 + pchMsg[1]);
-		for (i = 2; i <= (wDataLen - 1); i++) {
-			lwData = (short) pchMsg[i];
-			bitPos = 8;
-			do {
-				if ((lwCrc & 0x8000) == 0x8000) {
-					lwCrc = (short) (lwCrc << 1);
-					if (((lwData >> (bitPos - 1)) & 0x1) == 0x1) {
-						lwCrc = (short) (lwCrc | 1);
-					}
-					lwCrc = (short) (lwCrc ^ 0x1021);
-				} else {
-					lwCrc = (short) (lwCrc << 1);
-					if (((lwData >> (bitPos - 1)) & 1) == 1) {
-						lwCrc = (short) (lwCrc | 1);
-					}
-				}
-				bitPos--;
-			} while (bitPos != 0);
-		}
-
-		return (short) (lwCrc % 0x10000);
-	}
-
-	public static String getCrc(byte[] data) {
-		int high;
-		int flag;
-
-		// 16位寄存器，所有数位均为1
-		int wcrc = 0xffff;
-		for (int i = 0; i < data.length; i++) {
-			// 16 位寄存器的高位字节
-			high = wcrc >> 8;
-			// 取被校验串的一个字节与 16 位寄存器的高位字节进行“异或”运算
-			wcrc = high ^ data[i];
-
-			for (int j = 0; j < 8; j++) {
-				flag = wcrc & 0x0001;
-				// 把这个 16 寄存器向右移一位
-				wcrc = wcrc >> 1;
-				// 若向右(标记位)移出的数位是 1,则生成多项式 1010 0000 0000 0001 和这个寄存器进行“异或”运算
-				if (flag == 1)
-					wcrc ^= 0xa001;
 			}
 		}
-
-		return Integer.toHexString(wcrc);
+		return (short) (crc % 65536);
 	}
 
+	public static void main(String[] args) {
+		byte[] test = { 0x1, 0x0, 0x0, (byte) 0xf0, 0x1, 0x0, 0x0, 0x0, 0x3, (byte) 0xf0, 0x0, 0x0, 0x78, 0x56, 0x34,
+				0x12 };
+		System.out.println(getcrc16(test, test.length) + "," + Integer.toHexString(getcrc16(test, test.length)));
+	}
 }

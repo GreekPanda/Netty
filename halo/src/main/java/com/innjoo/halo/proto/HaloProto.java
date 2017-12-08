@@ -20,61 +20,77 @@ public class HaloProto implements Serializable {
 	private short control_code;
 	private byte[] data;
 	private short crc;
-	
+
 	public byte[] getPackage_head() {
 		return package_head;
 	}
+
 	public void setPackage_head(byte[] package_head) {
 		this.package_head = package_head;
 	}
+
 	public int getPackage_len() {
 		return package_len;
 	}
+
 	public void setPackage_len(int package_len) {
 		this.package_len = package_len;
 	}
+
 	public int getSender_id() {
 		return sender_id;
 	}
+
 	public void setSender_id(int sender_id) {
 		this.sender_id = sender_id;
 	}
+
 	public int getReceiver_id() {
 		return receiver_id;
 	}
+
 	public void setReceiver_id(int receiver_id) {
 		this.receiver_id = receiver_id;
 	}
+
 	public short getSender_type() {
 		return sender_type;
 	}
+
 	public void setSender_type(short sender_type) {
 		this.sender_type = sender_type;
 	}
+
 	public short getControl_code() {
 		return control_code;
 	}
+
 	public void setControl_code(short contorl_code) {
 		this.control_code = contorl_code;
 	}
+
 	public byte[] getData() {
 		return data;
 	}
+
 	public void setData(byte[] data) {
 		this.data = data;
 	}
+
 	public short getCrc() {
 		return crc;
 	}
+
 	public void setCrc(short crc) {
 		this.crc = crc;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "HaloProto [package_head=" + Arrays.toString(package_head) + ", package_len=" + package_len
-				+ ", sender_id=" + sender_id + ", receiver_id=" + receiver_id + ", sender_type=" + sender_type
-				+ ", contorl_code=" + control_code + ", data=" + Arrays.toString(data) + ", crc=" + crc + "]";
+				+ ", sender_id=" + Integer.toHexString(sender_id) + ", receiver_id=" + Integer.toHexString(receiver_id)
+				+ ", sender_type=" + Integer.toHexString(sender_type) + ", contorl_code=" + control_code + ", data="
+				+ Arrays.toString(data) + ", crc=" + Integer.toHexString(crc) + "]";
 	}
-	
+
 }

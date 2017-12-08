@@ -8,17 +8,13 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.innjoo.halo.ctx.PropCtx;
 import com.innjoo.halo.model.HaloChild;
-import com.innjoo.halo.model.HaloHourWater;
 import com.innjoo.halo.process.DrinkHistoryProc;
 import com.innjoo.halo.process.MakeFriends;
 import com.innjoo.halo.process.OtherSetting;
@@ -27,9 +23,7 @@ import com.innjoo.halo.process.ReqLinkProc;
 import com.innjoo.halo.proto.HaloProto;
 import com.innjoo.halo.proto.ProtoOpType;
 import com.innjoo.halo.proto.ResultData;
-import com.innjoo.halo.utils.DateUtils;
 import com.innjoo.halo.utils.Encryption;
-import com.innjoo.halo.utils.PropertyUtils;
 import com.innjoo.halo.utils.Utils;
 
 import io.netty.buffer.ByteBuf;
@@ -144,9 +138,10 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			else
 				crc = Utils.bytesToShortBig(byteCrc, 0);
 
-			LOG.info("从客户端接收报文，包头标示： " + strHeaderId + ",报文长度：" + package_len + ",发送方Id：" + senderId + ",接收方Id: "
-					+ recvId + ",发送者类型: " + senderType + ",控制码： " + ctrlCode + ",数据长度: " + rawDataLen + ", CRC: "
-					+ crc);
+			LOG.info(
+					"从客户端接收报文，包头标示： " + strHeaderId + ",报文长度：" + package_len + ",发送方Id：" + Integer.toHexString(senderId)
+							+ ",接收方Id: " + Integer.toHexString(recvId) + ",发送者类型: " + Integer.toHexString(senderType)
+							+ ",控制码： " + ctrlCode + ",数据长度: " + rawDataLen + ", CRC: " + Integer.toHexString(crc));
 
 			LOG.info("客户端数据内容： " + Utils.bytesToHexString(clientData));
 
@@ -154,13 +149,12 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			byte[] packageNoCrc = new byte[package_len - 2];
 			in.getBytes(12, packageNoCrc, 0, package_len - 2);
 
-			// TODO:CRC这里有点问题，客户端上报之后貌似不正确
 			if (!isCrcRight(packageNoCrc, crc)) {
-			// // 并将错误的结果直接返回给客户端
-			// out.add(makeHaloProto(null, 0, ProtoOpType.SERVER_ACK_INVALID, 0xf000001));
-			// // in.resetReaderIndex();
-			// return;
-			 }
+				// // 并将错误的结果直接返回给客户端
+				out.add(makeHaloProto(null, 0, ProtoOpType.SERVER_ACK_INVALID, 0xf000001));
+				in.resetReaderIndex();
+				return;
+			}
 
 			// 处理所有的分支流程
 			if (ctrlCode == 4)
@@ -175,8 +169,8 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 	}
 
 	private boolean isCrcRight(byte[] in, short originCrc) {
-		short genCrc = (short) Encryption.crc16((in), (short) in.length);
-		LOG.debug("Origin crc: " + originCrc + ", new crc: " + genCrc);
+		short genCrc = Encryption.getcrc16(in, in.length);
+		LOG.debug("Origin crc: " + Integer.toHexString(originCrc) + ", new crc: " + Integer.toHexString(genCrc));
 		if (genCrc == originCrc)
 			return true;
 		else
@@ -248,7 +242,7 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		try {
 			byte[] content = Files.readAllBytes(path);
 			fileLen = content.length;
-			crc = (short) Encryption.crc16(content, (short) fileLen);
+			crc = Encryption.getcrc16(content, (short) fileLen);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -584,7 +578,7 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 		byte[] servId = "servhalo".getBytes();
 		System.arraycopy(servId, 0, transPackage, 0, servId.length);
 
-		int svrSendPackageLen = dataLen + 14 + 12;
+		int svrSendPackageLen = dataLen + 14;
 		byte[] byteSvrSendPackageLen = new byte[4];
 		byteSvrSendPackageLen = Utils.int2Byte(svrSendPackageLen);
 		System.arraycopy(byteSvrSendPackageLen, 0, transPackage, servId.length, 4);
@@ -614,7 +608,7 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 
 			hp.setPackage_head(servId);
 			hp.setSender_id(svrSenderId);
-			hp.setPackage_len(sendData.length + 26);
+			hp.setPackage_len(sendData.length + 14);
 			hp.setReceiver_id(clntRecvId);
 			hp.setSender_type(svrSenderType);
 			hp.setControl_code(ctrlCode);
@@ -624,10 +618,9 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			byte[] tmpCrcData = new byte[svrSendPackageLen - 14];
 			System.arraycopy(transPackage, 12, tmpCrcData, 0, svrSendPackageLen - 14);
 			LOG.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@crc data: " + Arrays.toString(tmpCrcData));
-			// short sendCrc = (short) Short.toUnsignedInt((short)
-			// Encryption.crc16(tmpCrcData, (short) (tmpCrcData.length)));
-			// String strCrc = Encryption.getCrc(tmpCrcData);
-			// hp.setCrc(Short.parseShort(Integer.toHexString(sendCrc), 16));
+
+			short crc = Encryption.getcrc16(sendData, (short) (sendData.length));
+			hp.setCrc(crc);
 
 			LOG.info("发送给客户端报文(数据内容不为空) : " + hp.toString());
 
@@ -645,8 +638,8 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			byte[] tmpCrcData = new byte[svrSendPackageLen - 14];
 			System.arraycopy(transPackage, 12, tmpCrcData, 0, svrSendPackageLen - 14);
 			LOG.debug("@@@@@@@@@@@@$$$$$$@@@@@@@@crc data: " + Arrays.toString(tmpCrcData));
-			// short sendCrc = (short)Encryption.crc16(tmpCrcData, (short) 2);
-			// hp.setCrc(sendCrc);
+			short crc = Encryption.getcrc16(sendData, (short) (sendData.length));
+			hp.setCrc(crc);
 
 			LOG.info("发送给客户端报文 (数据内容为空): " + hp.toString());
 		}
