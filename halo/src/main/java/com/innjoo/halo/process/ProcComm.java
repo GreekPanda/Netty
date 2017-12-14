@@ -10,9 +10,8 @@ import com.innjoo.halo.utils.Utils;
  * @author Cash Liao
  * @date 2017-11-13
  * 
- * 处理常用的接收数据的类，主要用于时间格式的处理
- * */
-
+ *       处理常用的接收数据的类，主要用于时间格式的处理
+ */
 
 public class ProcComm {
 
@@ -23,26 +22,34 @@ public class ProcComm {
 	public static final byte SCHOOL_END = 0x04;
 
 	private static int weekIndex() {
-		
-		Calendar rightNow=Calendar.getInstance();  
-        int day=rightNow.get(Calendar.DAY_OF_WEEK);
-        return day;
+
+		Calendar rightNow = Calendar.getInstance();
+		int day = rightNow.get(Calendar.DAY_OF_WEEK);
+		return day;
 	}
-	
+
 	// 获取本地时间，需要将年月日时分秒都填入到字节流中
 	public static byte[] getLocalTime() {
 
 		byte[] localTime = new byte[8];
 		String dateTime = DateUtils.getDateTime();
-		short year = Short.parseShort(dateTime.split(" ")[0].split("-")[0]);
+		Short year = Short.parseShort(dateTime.split(" ")[0].split("-")[0]);
 		byte[] byteYear = new byte[2];
 		byteYear = Utils.short2Byte(year);
-		
+
 		byte mon = Byte.parseByte(dateTime.split(" ")[0].split("-")[1]);
 		byte day = Byte.parseByte(dateTime.split(" ")[0].split("-")[2]);
 		byte hour = Byte.parseByte(dateTime.split(" ")[1].split(":")[0]);
 		byte min = Byte.parseByte(dateTime.split(" ")[1].split(":")[1]);
 		byte sec = Byte.parseByte(dateTime.split(" ")[1].split(":")[2]);
+
+		// 这个时候0是一个字符，占用了一个ascii位，所以此种方法不可行
+		// String strMon = String.format("%02d", mon);
+		// String strDay = String.format("%02d", day);
+		// String strHour = String.format("%02d", hour);
+		// String strMin = String.format("%02d", min);
+		// String strSec = String.format("%02d", sec);
+		// String strWeek = String.format("%02d", weekIndex());
 
 		System.arraycopy(byteYear, 0, localTime, 0, 2);
 		localTime[2] = mon;
@@ -50,7 +57,7 @@ public class ProcComm {
 		localTime[4] = hour;
 		localTime[5] = min;
 		localTime[6] = sec;
-		localTime[7] = (byte)weekIndex();
+		localTime[7] = (byte) weekIndex();
 
 		return localTime;
 	}
@@ -68,10 +75,10 @@ public class ProcComm {
 			return null;
 
 		byte[] sleepStartTime = new byte[8];
-		
-		if (hc.getSleepTimeStart() != null) {			
+
+		if (hc.getSleepTimeStart() != null) {
 			formatTime(sleepStartTime, hc, SLEEP_START, false);
-		} else {			
+		} else {
 			formatTime(sleepStartTime, hc, SLEEP_START, true);
 		}
 
@@ -82,11 +89,10 @@ public class ProcComm {
 	public static byte[] makeSleepTimeEndResp(HaloChild hc) {
 		if (hc == null)
 			return null;
-		
+
 		byte[] sleepEndTime = new byte[8];
-		
+
 		if (hc.getSleepTimeEnd() != null) {
-			// TODO:字符串中存放时间的格式，数据库中式0:0格式，所以可以使用“:”分开，获取sleep_time的小时和分钟
 			formatTime(sleepEndTime, hc, SLEEP_END, false);
 		} else {
 			// 年、月、日、时、分、秒、星期均为0
@@ -100,11 +106,10 @@ public class ProcComm {
 	public static byte[] makeSchoolTimeStartResp(HaloChild hc) {
 		if (hc == null)
 			return null;
-		
+
 		byte[] schoolStartTime = new byte[8];
 
 		if (hc.getSchoolTimeStart() != null) {
-			// TODO:字符串中存放时间的格式，数据库中式0:0格式，所以可以使用“:”分开，获取sleep_time的小时和分钟
 			formatTime(schoolStartTime, hc, SCHOOL_START, false);
 		} else {
 			// 年、月、日、时、分、秒、星期均为0
@@ -118,11 +123,10 @@ public class ProcComm {
 	public static byte[] makeSchooTimeEndResp(HaloChild hc) {
 		if (hc == null)
 			return null;
-		
+
 		byte[] schoolEndTime = new byte[8];
 
 		if (hc.getSchoolTimeEnd() != null) {
-			// TODO:字符串中存放时间的格式，数据库中式0:0格式，所以可以使用“:”分开，获取sleep_time的小时和分钟
 			formatTime(schoolEndTime, hc, SCHOOL_END, false);
 		} else {
 			// 年、月、日、时、分、秒、星期均为0
@@ -231,5 +235,4 @@ public class ProcComm {
 		System.arraycopy(week, 0, timeResp, 7, week.length);
 
 	}
-
 }

@@ -47,7 +47,8 @@ public class OtherSetting {
 
 		// 根据accountId查询数据库
 		HaloChild hc = new HaloChild();
-		hc = haloChildService.selectByPrimaryKey(accountId);
+		//TODO:285为了测试
+		hc = haloChildService.selectByPrimaryKey(285);
 		if (hc != null) {
 			// 根据accountId更新haloId和roleId
 			haloChildService.updateHaloIdAndRoleIdByAccountId(hc);
@@ -89,7 +90,44 @@ public class OtherSetting {
 			System.arraycopy(schoolTimeEnd, 0, out, 40, 8);
 
 		} else {
-			return;
+			// 根据accountId更新haloId和roleId
+			//haloChildService.updateHaloIdAndRoleIdByAccountId(hc);
+
+			byte[] localTime = ProcComm.getLocalTime();
+
+			short language = hc.getDevicelanguage().shortValue();
+			byte[] byteLanguage = Utils.short2Byte(language);
+
+			// 这个40度是原有代码中，不知道为什么是40度？
+			short temp = 40;
+			byte[] byteTemp = Utils.short2Byte(temp);
+
+			// 喝水的量
+			short drinkVol = hc.getTarget().shortValue();
+			byte[] byteDrinkVol = Utils.short2Byte(drinkVol);
+
+			short petId;
+
+			if (hc.getPetid() == 0)
+				petId = (short) roleId;
+			else
+				petId = (short) hc.getPetid().shortValue();
+
+			byte[] bytePetId = Utils.short2Byte(petId);
+			byte[] sleepTimeStart = ProcComm.makeSleepTimeStartResp(hc);
+			byte[] sleepTimeEnd = ProcComm.makeSleepTimeEndResp(hc);
+			byte[] schoolTimeStart = ProcComm.makeSchoolTimeStartResp(hc);
+			byte[] schoolTimeEnd = ProcComm.makeSchooTimeEndResp(hc);
+
+			System.arraycopy(localTime, 0, out, 0, 8);
+			System.arraycopy(byteLanguage, 0, out, 8, 2);
+			System.arraycopy(byteTemp, 0, out, 10, 2);
+			System.arraycopy(byteDrinkVol, 0, out, 12, 2);
+			System.arraycopy(bytePetId, 0, out, 14, 2);
+			System.arraycopy(sleepTimeStart, 0, out, 16, 8);
+			System.arraycopy(sleepTimeEnd, 0, out, 24, 8);
+			System.arraycopy(schoolTimeStart, 0, out, 32, 8);
+			System.arraycopy(schoolTimeEnd, 0, out, 40, 8);
 		}
 	}
 }

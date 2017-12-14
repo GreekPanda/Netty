@@ -46,10 +46,12 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
 		// 从客户端接收到二进制流进行解析
 
+		if (in == null)
+			return;
 		// 传输报文格式：a8package_head/Npackage_len/Nsender_id/Nreceiver_id/nsender_type/ncontorl_code/a{$length}data/ncrc
 		int len = in.readableBytes();
 
-		if (in == null || len <= 0) {
+		if (len <= 0) {
 			LOG.info("Recv from client data length: " + len);
 			return;
 		}
@@ -83,6 +85,7 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			byte[] bytePackage_len = new byte[4];
 			in.getBytes(8, bytePackage_len, 0, 4);
 
+			// !!!注意所谓报文长度就是：数据内容+14字节，即数据内容+Nsender_id/Nreceiver_id/nsender_type/ncontorl_code(共12字节)+crc(2字节)
 			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
 				package_len = Utils.bytesToIntLittle(bytePackage_len, 0);
 			else
@@ -119,7 +122,7 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 
 			// 3.获取数据报文的长度，即整个整个包长减去包头26字节（headerId(8) + package_len(4) + sender_id(4)
 			// recv_id(4)+sender_type(2) + control_code (2) + crc(2) 字节）
-			short rawDataLen = (short) (package_len - 26);
+			short rawDataLen = (short) (len - 26);
 			if (rawDataLen < 0) {
 				LOG.fatal("数据长度不正确: + " + rawDataLen);
 				in.resetReaderIndex();
@@ -132,25 +135,29 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 
 			// 最后两个字节是crc
 			byte[] byteCrc = new byte[2];
-			in.getBytes(24 + rawDataLen, byteCrc, 0, 2);
+			in.getBytes(len - 2, byteCrc, 0, 2);
 			if (PropCtx.getPropInstance().getProperty("host.endian").equals("little"))
 				crc = Utils.bytesToShortLittle(byteCrc, 0);
 			else
 				crc = Utils.bytesToShortBig(byteCrc, 0);
 
-			LOG.info(
-					"从客户端接收报文，包头标示： " + strHeaderId + ",报文长度：" + package_len + ",发送方Id：" + Integer.toHexString(senderId)
-							+ ",接收方Id: " + Integer.toHexString(recvId) + ",发送者类型: " + Integer.toHexString(senderType)
-							+ ",控制码： " + ctrlCode + ",数据长度: " + rawDataLen + ", CRC: " + Integer.toHexString(crc));
+			LOG.info("从客户端接收报文 ，接收buff总长 : " + len + "，包头标示： " + strHeaderId + ",报文长度：" + package_len + ",发送方Id："
+					+ Integer.toHexString(senderId) + ",接收方Id: " + Integer.toHexString(recvId) + ",发送者类型: "
+					+ Integer.toHexString(senderType) + ",控制码： " + ctrlCode + ",数据长度: " + rawDataLen + ", CRC: "
+					+ Integer.toHexString(crc));
 
-			LOG.info("客户端数据内容： " + Utils.bytesToHexString(clientData));
+			LOG.info("客户端数据内容： " + Arrays.toString(clientData));
 
 			// 如果重新生成的crc与原来不一致，则直接返回不处理
 			byte[] packageNoCrc = new byte[package_len - 2];
 			in.getBytes(12, packageNoCrc, 0, package_len - 2);
 
+			String strGenCrc = javax.xml.bind.DatatypeConverter.printHexBinary(packageNoCrc);
+			LOG.debug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!To gen crc data: " + Arrays.toString(packageNoCrc)
+					+ "Conver to String: " + strGenCrc);
+
 			if (!isCrcRight(packageNoCrc, crc)) {
-				// // 并将错误的结果直接返回给客户端
+				LOG.info("与客户端CRC不一致！");
 				out.add(makeHaloProto(null, 0, ProtoOpType.SERVER_ACK_INVALID, 0xf000001));
 				in.resetReaderIndex();
 				return;
@@ -169,12 +176,16 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 	}
 
 	private boolean isCrcRight(byte[] in, short originCrc) {
-		short genCrc = Encryption.getcrc16(in, in.length);
-		LOG.debug("Origin crc: " + Integer.toHexString(originCrc) + ", new crc: " + Integer.toHexString(genCrc));
-		if (genCrc == originCrc)
-			return true;
+
+		String newCrc = Encryption.genCrc(in);
+		LOG.debug("客户端CRC: " + Integer.toHexString(originCrc) + ", 服务端生成CRC: " + newCrc);
+		String strOriginCrc = Integer.toHexString(originCrc);
+		boolean ret = true;
+		if (strOriginCrc.length() >= 4)
+			ret = newCrc.equals(strOriginCrc.substring(strOriginCrc.length() - 4, strOriginCrc.length()));
 		else
-			return false;
+			ret = newCrc.equals(strOriginCrc);
+		return ret;
 	}
 
 	private void processReqLink(byte[] in, HaloChild hc, ResultData rd, List<Object> out) {
@@ -573,35 +584,37 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 
 		// a8package_head/Npackage_len/Nsender_id/Nreceiver_id/nsender_type/ncontorl_code/a{$length}data/ncrc
 		// 将所有的要发送的数据全部拷贝到一个数组中然后计算crc
+
 		byte[] transPackage = new byte[dataLen + ProtoOpType.HALO_PACKAGE_HEADRE_LEN + 12];
 
 		byte[] servId = "servhalo".getBytes();
-		System.arraycopy(servId, 0, transPackage, 0, servId.length);
+		System.arraycopy(servId, 0, transPackage, 0, 8);
 
+		// !!!注意所谓报文长度就是：数据内容+14字节，即数据内容+Nsender_id/Nreceiver_id/nsender_type/ncontorl_code(共12字节)+crc(2字节)
 		int svrSendPackageLen = dataLen + 14;
 		byte[] byteSvrSendPackageLen = new byte[4];
 		byteSvrSendPackageLen = Utils.int2Byte(svrSendPackageLen);
-		System.arraycopy(byteSvrSendPackageLen, 0, transPackage, servId.length, 4);
+		System.arraycopy(byteSvrSendPackageLen, 0, transPackage, 8, 4);
 
-		int svrSenderId = 0x0001;
+		int svrSenderId = 0x1;
 		byte[] byteServId = new byte[4];
 		byteServId = Utils.int2Byte(svrSenderId);
-		System.arraycopy(byteServId, 0, transPackage, servId.length + 4, 4);
+		System.arraycopy(byteServId, 0, transPackage, 8 + 4, 4);
 
 		int clntRecvId = recvId;
 		byte[] byteclntRecvId = new byte[4];
 		byteclntRecvId = Utils.int2Byte(clntRecvId);
 		//// 需要向后偏移出前面已经占的4(svrSenderId) + 4(svrSendPackageLen)字节位置，下面类同
-		System.arraycopy(byteclntRecvId, 0, transPackage, servId.length + 4 + 4, 4);
+		System.arraycopy(byteclntRecvId, 0, transPackage, 8 + 4 + 4, 4);
 
 		short svrSenderType = (short) 0xf003;
 		byte[] byteSvrSenderType = new byte[2];
 		byteSvrSenderType = Utils.int2Byte(svrSenderType);
-		System.arraycopy(byteSvrSenderType, 0, transPackage, servId.length + 4 + 4 + 4, 2);
+		System.arraycopy(byteSvrSenderType, 0, transPackage, 8 + 4 + 4 + 4, 2);
 
 		byte[] byteCtrlCode = new byte[2];
 		byteCtrlCode = Utils.int2Byte(ctrlCode);
-		System.arraycopy(byteCtrlCode, 0, transPackage, servId.length + 4 + 4 + 4 + 2, 2);
+		System.arraycopy(byteCtrlCode, 0, transPackage, 8 + 4 + 4 + 4 + 2, 2);
 
 		if (sendData != null && sendData.length > 0) {
 			hp = new HaloProto();
@@ -613,13 +626,15 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 			hp.setSender_type(svrSenderType);
 			hp.setControl_code(ctrlCode);
 			hp.setData(sendData);
-			System.arraycopy(sendData, 0, transPackage, servId.length + 4 + 4 + 4 + 2 + 2, sendData.length);
+			// 从第24个字节开始到crc两个字节之前为数据部分
+			System.arraycopy(sendData, 0, transPackage, 24, sendData.length);
 			// 将整个报文存放在数组中，然后全部计算crc
-			byte[] tmpCrcData = new byte[svrSendPackageLen - 14];
-			System.arraycopy(transPackage, 12, tmpCrcData, 0, svrSendPackageLen - 14);
-			LOG.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@crc data: " + Arrays.toString(tmpCrcData));
+			byte[] tmpCrcData = new byte[sendData.length + 12];
+			System.arraycopy(transPackage, 12, tmpCrcData, 0, sendData.length + 12);
+			LOG.debug("发送内容不为空时，crc data: " + javax.xml.bind.DatatypeConverter.printHexBinary(tmpCrcData));
 
-			short crc = Encryption.getcrc16(sendData, (short) (sendData.length));
+			String strCrc = Encryption.genCrc(tmpCrcData);
+			short crc = (short) Integer.parseInt(strCrc, 16);
 			hp.setCrc(crc);
 
 			LOG.info("发送给客户端报文(数据内容不为空) : " + hp.toString());
@@ -629,16 +644,19 @@ public class NettyServerDecoder extends ByteToMessageDecoder {
 
 			hp.setPackage_head(servId);
 			hp.setSender_id(svrSenderId);
-			hp.setPackage_len(26);
+			hp.setPackage_len(14);
 			hp.setPackage_head(servId);
 			hp.setReceiver_id(clntRecvId);
 			hp.setSender_type(svrSenderType);
 			hp.setControl_code(ctrlCode);
 			hp.setData(new byte[] {});
-			byte[] tmpCrcData = new byte[svrSendPackageLen - 14];
-			System.arraycopy(transPackage, 12, tmpCrcData, 0, svrSendPackageLen - 14);
-			LOG.debug("@@@@@@@@@@@@$$$$$$@@@@@@@@crc data: " + Arrays.toString(tmpCrcData));
-			short crc = Encryption.getcrc16(sendData, (short) (sendData.length));
+
+			byte[] tmpCrcData = new byte[12];
+			System.arraycopy(transPackage, 12, tmpCrcData, 0, 12);
+			LOG.debug("发送内容为空时，crc data: " + javax.xml.bind.DatatypeConverter.printHexBinary(tmpCrcData));
+
+			String strCrc = Encryption.genCrc(tmpCrcData);
+			short crc = (short) Integer.parseInt(strCrc, 16);
 			hp.setCrc(crc);
 
 			LOG.info("发送给客户端报文 (数据内容为空): " + hp.toString());

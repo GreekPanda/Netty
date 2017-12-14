@@ -1,38 +1,36 @@
 package com.innjoo.halo;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
+import com.innjoo.halo.process.ProcComm;
+import com.innjoo.halo.utils.Utils;
 
 /**
  * Unit test for simple App.
  */
-public class AppTest 
-    extends TestCase
-{
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest( String testName )
-    {
-        super( testName );
-    }
+public class AppTest {
+	private static byte[] testBf() {
+		short value = 2017;
+		ByteBuffer buffer = ByteBuffer.allocate(2);
+		buffer.putShort(value);
+		return buffer.array();
+	}
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
+	public static void main(String[] args) {
+		byte[] b = new byte[2];
 
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
-    }
+		b = testBf();
+
+		System.out.println(Arrays.toString(b));
+		System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(b));
+
+		byte[] c = new byte[2];
+		c = Utils.short2Byte((short) 2017);
+		System.out.println(Arrays.toString(c));
+
+		System.out.println(Arrays.toString(ProcComm.getLocalTime()));
+		System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(ProcComm.getLocalTime()));
+
+	}
 }
